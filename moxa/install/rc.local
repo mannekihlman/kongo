@@ -1,0 +1,14 @@
+# !/bin/sh
+hostname novac
+syslogd
+
+rm /etc/mtab
+/home/dosfsck /dev/mmc1 -a
+mount /mnt/
+
+rm /mnt/flash/novac/*.rec -f
+cd /mnt/flash/novac
+/home/movepakfiles
+/home/kongo &
+/home/runsh
+PS1='\u@\h \w>'

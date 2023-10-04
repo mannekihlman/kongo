@@ -1,0 +1,12 @@
+service ftp
+{
+	port		= 21
+	protocol	= tcp
+	socket_type	= stream
+	wait		= no
+	user		= root
+	server		= /home/ftpd
+	server_args = -w /home/root
+	disable		= no
+}
+

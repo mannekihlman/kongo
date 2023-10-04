@@ -1,0 +1,39 @@
+% This name will be written in the spectrum-files (maximum 	16 characters)
+It also defines the name for the file containing the IP number uploaded to the server
+% INSTRUMENTNAME=I2J5897
+ 
+% The following channels defines which channels in the spectra that will be transferred
+% STARTCHN=0
+% STOPCHN=0
+
+% If Realtime=1 then the spectra will be added to work.pak one at a time.
+% If RealTime=0 then the spectra will be added to work.pak one scan at a time
+# REALTIME=0
+
+DEBUG=2
+% StepsPerRound defines the number of steps the steppermotor divides one round into
+STEPSPERROUND=400
+MOTORSTEPSCOMP=0
+
+% PortNameADC=/dev/ttymxc2
+% PortNameSpec=/dev/ttymxc1
+SPECTROMETERTYPE=AVANTES
+
+% If Skipmotor=1 then the scanner will not be used. ONLY FOR TESTING PURPOSES
+SKIPMOTOR=0
+DELAY=100
+
+PERCENT=0.7
+MAXINTTIME=5000
+
+% timeout in miliseconds for accessing the server
+% FTPTIMEOUT=20000
+% SERVER=129.16.35.206 novacUser iht-1inks.
+DEBUG=1
+BATTERYLIMIT=10
+COMPASS=270 0.0 0.0 0.0
+
+% sum1 is inside the specrometer [1 to 15]
+%-----pos----time-sum1-sum2--chn--basename----- repetitions
+MEAS=   0 -1 2 1 256 sky      1  7
+MEAS= 100  0 2 1 256 dark      1  7

@@ -1,0 +1,256 @@
+Date 2009-06-01
+Fixed a bug, probably in the spectrometer that occurred with 
+USB2000+ if the previous scan had an exposure time below 655ms
+and the new one has a exposure time of 655ms or higher.
+This is probably due to that the spectrometer internally counts
+in hundreths of miliseconds and 65536 / 100 results in a different
+timing mode inside the spectrometer. It was solved by checking for
+this exposure time traversion and in that case, measure a spectrum with
+only 1ms Exposure time before measuring the true spectrum.
+The reason for why this solves the problem is not known but the
+short spectrum probably forces a clean initialization of the
+exposure timers inside the spectrometer.
+(The change in code occured in the end of function sendExposureTime)
+
+Date 2009-05-31
+Fixed bugs that occurred with USB2000+ and when spectrum were transferred
+with 32bits and when start-and stop pixels
+were set in the configuration file. This caused the
+data from the spectrometer to have some more datafields, and these
+were not compatible with the older spectrometers. This resulted
+in an invalid offset to the first pixel in these cases.
+
+Date 2009-05-31
+Modified code for dopulses and msleep to include changes done for the
+Arellano-solartracker
+in order to speed up stepping when using external stepper-motor controllers.
+
+Date 2009-03-07
+Added support for the USB2000+ spectrometer
+Note: To use it you must enter
+SPECTROMETERTYPE=USB2000+ in your cfg.txt file.
+
+In that case the program will hange the Baudrate at startup with the K command
+and will use 32 bits per pixel, if this is recognized in the returned data.
+
+Note: Changing the baudrate will fail and will hang the spctrometer if
+not subseeded by a poweroff of the spectrometers to return its internal
+registers to startup state. Therefore it is not
+possible to connect/unconnect the spectrometer to a running kongo program.
+
+Date 2009-01-04
+Fixes of the ftp-client in kongo.
+
+Error 1: inet_addr() call was not supported by AXIS,
+was replaced by gethostbyname.
+
+Error 2: MSG_TIMEOUT flag was not supported by AXIS in recv() call,
+was replaced by O_NONBLOCK flag in recv() call.
+
+
+Date 2008-12-10
+Removed call to GetCompass since compass is not used.
+
+Date 2008-07-22
+Added check that cfgstrato.txt exists before trying to use it.
+Made sun calculation more similar to Beck-code for simplifying
+future changes.
+
+Date 2008-07-17
+Added possibility to set parameter MININTTIME=
+that define the minimum allowable exposure time.
+
+Added possible parameter STRATOANGLE= and dedicated logic.
+Notice: By default STRATOANGLE=5 is used.
+If the sun elevation angle is below stratoangle then
+cfgstrat.txt will be used instead of cfg.txt.
+Sun elevation angle is approximately 56 degrees in the
+summer in the middle of the day in Sweden and decreases
+to 0 and to negative values at night.
+
+Date 2008-05-12
+AXIS version
+GetCompass had temporarily been disabled by a return in GetCompass.
+However this was done in an invalid way so that compass data read
+from cfg.txt was overwritten.
+since the float compassdir is assigned the return value of GetCompass()
+This was changed so that compass is correctly read from hardware if
+it exists. As usual, if the first argument of COMPASS= in cfg.txt is below
+360 deg then these values will be used. Remember:a value above 360 in the
+spectrum header indicates that
+the result originates from true hardware compass.
+
+A bug was fixed that caused kongo to read status.dat instead of cfg.txt after
+a cfgonce.txt session.
+
+Removed possibility to set temperature with the 4th argument in COMPASS=
+since this causes confusion and is probably not used anymore.
+ 
+
+Date 2007-Sept-20
+Special Kongo_memoryfile version.
+In this version, all files should be stored on A: and will be created on A:
+The only files that will end up on B: is Uxxx.pak and Rxxx directories.
+This requries changes in the NOVAC program.
+THis version also requires changing TCPIMPEM=32 in chip.ini in order to
+free RAM memory that is needed.
+
+Date 2007-Sept-19
+Included so that the box is rebooted if it tries to remove a file but fails because
+the file is locked. After 100 such tries and fails, the box is rebooted.
+This was done in the hope that it would fix problems with locked files during ftp
+transfer.
+
+Changes so that work.pak is stored on A: instead.
+Therefore make sure you don't have any unnessecary files on A: that take space.
+The files that should exist on A: is:
+
+chip.ini
+autoexec.bat
+kongo.exe
+tx.exe
+ztrans.exe
+extide.exe
+cfg.txt
+Of course there will now also be a file called work.pak on A: that is created
+by kongo.exe.
+
+This should not affect how the NOVAC program communicates with the Manne-box.
+
+Date 2007-August-29
+Changed so that cfg.txt is read from a:cfg.txt instead.
+
+Date 2007-June-13
+Changed so that the CPU clock is set every time a correct time is received from the GPS
+instead of only at startup, as was done before.
+This was done to avoid/reduce problems if the CPU clock is running at slightly wrong speed.
+Incorrect behaviour with the time on a system at Tunguruha indicates that this could be the case
+on some systems. Also changed behaviour at startup so that the CPU clock is set to the same time&date
+as the STATUS.DAT file or the WORK.PAK file if any of these files exists. This is done before the
+first polling of the GPS for time.
+ 
+Date 2007-May-29
+Added function at startup that checks if the current drive is B: when
+kongo.exe starts. If not, it will automatically reboot after a delay of 10 seconds. This was done since it has been observed a few times that the driver for the CompactFlash sometimes fails to load, but will in such cases load after a soft-reset.
+
+Date 2007-March-15
+Added possible parameter REALTIME=2, this will tell kongo to behave in the old way when
+renaming .pak files at startup and at the finish of a scan.
+
+Date 2007-March-05
+Fixed a bug that gave viewangle=270 instead of -90
+
+Date 2007-March-05
+Fixed a bug that caused the viewangle and viewangle2 in the spectrum header to always
+be zero if SKIPMOTOR=1 was used.
+
+Date 2007-March-04
+The microcode for the PIC processor has changed (gps20_8_627.asm) so that when the ADC is read,
+16 samples is summed and all bits are transferred to the SC12 processor. This will make the ADC
+less sensitive to noise and this will improve the temperature reading a lot, it will also speed
+up ADC reading since no averaging needs to be done in the Sc12 processor.  Both microcode and new
+kongo.exe are backward compatible so older PCB versions will also work with the new kongo.exe but
+will not take advantage of the new improved ADC precision and speed. The new microcode version
+is 5, thus, DeterminePCB will report version 5 when kongo.exe starts up. All systems at chalmers
+will be updated to the newest PIC microcode.
+
+Date 2007-March-02
+Added possible setting REALTIME=2, this will tell kongo.exe to not use the new
+approach with the .pak files but instead use the old way of only storing in work.pak uand upload.pak.
+
+Date 2007-Feb-27
+Fixed a bug that put a space in front of the serialnumber if it was queried from the spectrometer.
+
+Date 2007-Feb-26
+To make wind-measurements possible with the Heidelberg-motor system, the repeat measurement
+capability has been improved. This will go into effect if bit nr 3 in the flag is set i.e.
+you should add the value 8 to your original setting of the flag field of your MEAS= line.
+Then, the motor positions will alternate between the new position as given by the MEAS= line
+and the position they had just before. The fields viewangle and viewangle2 in the header of
+the spectrums will show the correct positions. Every even time, i.e. when the repetition
+number is 0,2,4,6... (it starts at zero) it will have the new position, every odd time, 1,3,5..
+it will have the old position. 
+Here shows an example:
+MEAS=   0   0 -1 2 1 256 sky      1  7
+MEAS= 100 100  0 2 1 256 altenate 5  15
+MEAS= 250 250  0 2 1 256 dark     1  7  
+Notice that bit nr 3 is set in flag on the second line and is repeated 5 times. This will
+alternate between position [100,100] (the new) and position [0,0] (the old, set by the first line). 
+
+Date 2007-Feb-25
+If SPECTROMETERTYPE=HR2000 it will try to change the baudrate of the spectrometer with the 'K'
+command when kongo starts. This was required since HR2000 does not understand "x42 Baud 6" as
+the old S2000 did.
+
+Date 2007-Feb-25
+Added possibility to use SKIPMOTOR=2. This will tell kongo to skip control of the internal
+steppermotor controllers but to use external motorcontrollers as usual.
+This was required to speed up motor-movements of the Heidelberg-system since feeding the internal
+steppermotor controller with control signals takes unnessecary time then.
+
+Date 2007-Feb-16
+Fixed a part of the code that runs when kongo starts that gets the date&time from the files
+work.pak and upload.pak. There was an error that blocked access to these files,
+in some cases. This caused disastrous results in combination with the detection of a Full
+CompactFlash since it started to delete one .pak file after another.
+Is now fixed.
+
+Date 2007-Jan-26
+Added code to delete the oldest R--- catalog or if none exists the oldest U--- catalog
+This is done if the COmpactFlash-card gets full.
+Also added so that if the number of u---.pak files reaches 512 it will
+make a new R--- directory and copy all U---.pak files there and start over again.
+
+Date 2007-Jan-15
+Changes the order things are done at startup.
+Power is now OFF while the copying of u--- and R--- files.
+
+Date 2007-Jan-13
+Changed run----- to R--- where --- is now 3 digits hexadecimal (giving max 4095 values).
+Changed u------- to u--- where --- is now 3 digits hexadecimal (giving max 4095 values).
+As it was before, tx.exe and transfer.exe will have problems to retrieve files due to
+too long filenames.
+
+
+Date 2007-Jan-12
+A new run----- directory will not be created at startup if there is no *.pak files.
+
+Date 2007-Jan-11
+Changed names for upload files
+to u---------.pak where ------ are 7 digits that are increased for every
+complete scan.
+Old days are saved in run------ where ----- are 5 digits that are increased
+for every day.
+
+
+Date 2006-Nov-13
+
+1. The ADC and the battery is now only sampled before the first MEAS= line.
+This was done because it was not accepted that the reading of the ADC slows down
+the measurements. The ADC is now also read 4 times and the average is calculated
+in order to reduce the noise in the ADC reading. Reading of the ADC takes
+approximately 1.0 seconds.
+
+2. Changed the code to set integration time on the HR4000 so that it is done in binary
+mode instead of ASCII mode, which makes the code more elegant and takes less time.
+Notice: This is not tested yet!
+
+3. Added code to preliminary support the USB4000.
+You can now define SPECTROMETERTYPE=USB4000
+Adding scans together inside the spectrometer should work, but is still
+not working for HR4000.
+For the USB4000, the number of added scans is not limited to 15 anymore
+since the data is transferred from the spectrometer with 32 bits precision instead
+of 16 bits (it is always 16 bits on S2000) if the number of internal summing is above 1.
+Notice: Code is not tested yet since we have no USB4000 yet!
+
+4. Added code to read the spectrometer serial number with command "?x0"
+If successful, it will be stored as the instrumentname. To make use of this,
+you should remove the line INSTRUMENTNAME= in cfg.txt
+
+5. If the spectrometertype is HR4000 or USB4000, kongo will read the temperature sensor
+located inside the spectrometer with the "?t" command. The value will be written in
+the temperature field in the spectrum header. The sensor is only read before the first
+MEAS=. If temperature is given as the fourth argument on the COMPASS= line, it will
+ovverride the value queried from the spectrometer. Therefore, to use the spectrometer result,
+only use 3 arguments on the COMPASS= line or no COMPASS= line.
