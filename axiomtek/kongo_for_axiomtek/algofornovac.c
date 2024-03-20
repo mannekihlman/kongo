@@ -21,7 +21,7 @@
 
 //input variables
 
-                                                         
+
 //variables for julian day calculation
 double JD;                                              //Julian Day (see info below)
 double D0;
@@ -70,54 +70,48 @@ short input = 0;                                          //asking for input in 
 
 double moduloday(double hours)                         //modulo 24 h
 {
-    integer = (short)(hours/24);
+    integer = (short) (hours / 24);
     newinteger = integer * 24;
-    return(hours-newinteger);    
+    return (hours - newinteger);
 }
 
 double dtr(double degree)                               //transfers degrees to rad
 {
-    return(degree*PI/180);
+    return (degree * PI / 180);
 }
 
 double rtd(double rad)                                  //transfers rad to degree
 {
-    return(rad*180/PI);
+    return (rad * 180 / PI);
 }
 
 double modulocircle(double degree)                     //modulo 360 degrees
 {
-    integer = (short)(degree/360);
-    newinteger = integer*360;
-   
-    return(degree-newinteger);
+    integer = (short) (degree / 360);
+    newinteger = integer * 360;
+
+    return (degree - newinteger);
 }
 
 
-
-void CalcSunAngles(double lon, double lat, double D, double M, double Y, double h, double min, double s)
-{
+void CalcSunAngles(double lon, double lat, double D, double M, double Y, double h, double min, double s) {
 
 
-
-
-
-    if (M>2)                   //Julian Day, this number is counting days continuosly since 1. Januar 4713 BC, always
+    if (M > 2)                   //Julian Day, this number is counting days continuosly since 1. Januar 4713 BC, always
     {                         //refering to 12 h UT as a full day!!!!!!! So eg 0.75 means 12 h + (0.75h *24 h)
-        Y0=Y;                  //= 6 h (in the morning)         
-        M0=M;                                
-    }                           
-    else
-    {
-        Y0=Y-1;
-        M0=M+12;
+        Y0 = Y;                  //= 6 h (in the morning)
+        M0 = M;
+    } else {
+        Y0 = Y - 1;
+        M0 = M + 12;
     }
     D0 = D;
-    H0 = h/24.0 + min/1440.0 + s/86400.0;
-    A = (short)(Y0/100);
-    B = 2 - A + (short)(A/4);
-    
-    JD = (long)(365.25*(Y0+4716))+(short)(30.6001*(M0+1))+D0+H0+B-1524.5;     //JulianDays refering to current date
+    H0 = h / 24.0 + min / 1440.0 + s / 86400.0;
+    A = (short) (Y0 / 100);
+    B = 2 - A + (short) (A / 4);
+
+    JD = (long) (365.25 * (Y0 + 4716)) + (short) (30.6001 * (M0 + 1)) + D0 + H0 + B -
+         1524.5;     //JulianDays refering to current date
 
     n = JD - 2451545.0;                                 //days since 1.1.2000 12h UT
 
@@ -126,69 +120,67 @@ void CalcSunAngles(double lon, double lat, double D, double M, double Y, double 
     g = 357.528 + 0.9856003 * n;                        //middle anomaly
 
     g = modulocircle(g);
-    
-    EL = L + (2*e*sin(dtr(g))+5.0/4.0*pow(e,2)*sin(2*dtr(g)))*180/PI;  //ecliptical length
 
-    eps = 23.439 - 0.0000004*n;                         //schiefe der ekliptik
+    EL = L + (2 * e * sin(dtr(g)) + 5.0 / 4.0 * pow(e, 2) * sin(2 * dtr(g))) * 180 / PI;  //ecliptical length
 
-    alpha = rtd(atan(cos(dtr(eps))*sin(dtr(EL))/cos(dtr(EL)))); //rektraszension
-    if (cos(dtr(EL))<0) alpha = alpha + 180;
+    eps = 23.439 - 0.0000004 * n;                         //schiefe der ekliptik
 
-    delta = rtd(asin(sin(dtr(eps)*sin(dtr(EL)))));      //declination
+    alpha = rtd(atan(cos(dtr(eps)) * sin(dtr(EL)) / cos(dtr(EL)))); //rektraszension
+    if (cos(dtr(EL)) < 0) alpha = alpha + 180;
+
+    delta = rtd(asin(sin(dtr(eps) * sin(dtr(EL)))));      //declination
 
 
-    
+
 
     JD0 = JD - 0.5;                                    //*************************shouldn't it be 0.5???
 
-    T0 = (JD0 - 2451545.0)/36525;                       //julian centuries since 1.1.2000 0 h UT
+    T0 = (JD0 - 2451545.0) / 36525;                       //julian centuries since 1.1.2000 0 h UT
 
-    SWGH = 6.697376 + 2400.05134*T0 + 1.002738*(h+min/60+s/3600);       //it's all leading to calculate S,
+    SWGH = 6.697376 + 2400.05134 * T0 + 1.002738 * (h + min / 60 + s / 3600);       //it's all leading to calculate S,
     SWGH = moduloday(SWGH);                                             //which is the hour angle
 
     SWG = SWGH * 15;
     SW = SWG + lon;
-    S= SW - alpha;                                      //hour angle for specific longitude
+    S = SW - alpha;                                      //hour angle for specific longitude
 
-    
+
     //CALCULATION OF AZIMUT AND ELEVATION:
 
     //Azimut:
-    azim = rtd(atan(sin(dtr(S))/(cos(dtr(S))*sin(dtr(lat))-tan(dtr(delta))*cos(dtr(lat)))));
-    if ((cos(dtr(S))*sin(dtr(lat))-tan(dtr(delta))*cos(dtr(lat)))<0) azim = azim + 180;
-    azim = azim -360;
-    if (azim>180) azim = azim-360;
-    if (azim<-180) azim = azim+360;
-    
+    azim = rtd(atan(sin(dtr(S)) / (cos(dtr(S)) * sin(dtr(lat)) - tan(dtr(delta)) * cos(dtr(lat)))));
+    if ((cos(dtr(S)) * sin(dtr(lat)) - tan(dtr(delta)) * cos(dtr(lat))) < 0) azim = azim + 180;
+    azim = azim - 360;
+    if (azim > 180) azim = azim - 360;
+    if (azim < -180) azim = azim + 360;
+
     //Elevation:
-    elev = rtd(asin(cos(dtr(delta))*cos(dtr(S))*cos(dtr(lat))+sin(dtr(delta))*sin(dtr(lat))));
-        
+    elev = rtd(asin(cos(dtr(delta)) * cos(dtr(S)) * cos(dtr(lat)) + sin(dtr(delta)) * sin(dtr(lat))));
+
 }
 
 
-double GetSunAngle()
-{
-  long t,d;
-  short second,minute,hour,year,month,day;
-  t=gpstime/100;
-  second=t%100;
-  t/=100;
-  minute=t%100;
-  t/=100;
-  hour=t;
-  d=gpsdate;
-  year=2000+d%100;
-  d/=100;
-  month=d%100;
-  d/=100;
-  day=d;
-  CalcSunAngles(gpslon, gpslat, day, month, year,hour , minute, second);
+double GetSunAngle() {
+    long t, d;
+    short second, minute, hour, year, month, day;
+    t = gpstime / 100;
+    second = t % 100;
+    t /= 100;
+    minute = t % 100;
+    t /= 100;
+    hour = t;
+    d = gpsdate;
+    year = 2000 + d % 100;
+    d /= 100;
+    month = d % 100;
+    d /= 100;
+    day = d;
+    CalcSunAngles(gpslon, gpslat, day, month, year, hour, minute, second);
 
-  if(debugflag)
-    {
-      syslog(LOG,"SunAngle: azim=%lf elev=%lf\n",azim,elev);
+    if (debugflag) {
+        syslog(LOG, "SunAngle: azim=%lf elev=%lf\n", azim, elev);
     }
-  return elev;
+    return elev;
 }
 
 
