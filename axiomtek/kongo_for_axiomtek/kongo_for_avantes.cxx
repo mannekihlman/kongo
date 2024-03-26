@@ -184,7 +184,7 @@ namespace {
                     syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", digitalnoise, maxv_idx, avantes_inttime);
 
                 // if the digital noise is already 70% or higher just use the min test
-                if (digitalNoisePercentage > .7) {
+                if (digitalNoisePercentage > m_percent) {
                     inttime = stest;
                 } else {
                     SetExposureTime(ltest);
