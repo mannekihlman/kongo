@@ -167,32 +167,90 @@ namespace {
         } else if (inttime < 0) {
             SetSumCnt(1);
             const short stest = 24;
-            const short ltest = 300;
+            short ltest = 300; //no longer a constant because it can change with dynamic handling of exposure
             const long maxcounts = 16384;
-            SetExposureTime(ltest);
-            if (AvantesAddScan(0, chn, ltest)) {
+
+            SetExposureTime(stest);
+            if (AvantesAddScan(0, chn, stest)) {
                 inttime = 20;
             } else {
                 if (pchannel != -1) {
                     maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                 }
-                m = maxv;
-                if (debugflag > 0)
-                    syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", m, maxv_idx, avantes_inttime);
 
-                SetExposureTime(stest);
-                AvantesAddScan(0, chn, stest);
-                if (pchannel != -1) {
-                    maxv = AvgChannels(smem1, pchannel, 10, maxlen);
-                }
+                float digitalNoisePercentage = maxv / maxcounts;
                 digitalnoise = maxv;
                 if (debugflag > 0)
                     syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", digitalnoise, maxv_idx, avantes_inttime);
 
-                if (m < 1 || digitalnoise == m) {
-                    inttime = maxIntTime;
-                    if (debugflag) syslog(LOG, "Calculated exposure time: %ld ms\n", inttime);
+                // if the digital noise is already 70% or higher just use the min test
+                if (digitalNoisePercentage > .7) {
+                    inttime = stest;
                 } else {
+                    SetExposureTime(ltest);
+                    AvantesAddScan(0, chn, ltest);
+                    if (pchannel != -1) {
+                        maxv = AvgChannels(smem1, pchannel, 10, maxlen);
+                    }
+
+                    // find percentage of the maxv returned versus full exposure
+                    float percFullExposure = maxv / maxcounts;
+                    // low, high, and currentTest are for a binary search
+                    short low = stest;
+                    short high = ltest;
+                    short currentTest = ltest;
+
+                    // If we didn't meet exposure limits we need to keep searching to find it
+                    // We want exposure to land between 30 and 90 percent
+                    while (percFullExposure < .30 || percFullExposure > .90 || currentTest >= maxIntTime) {
+
+                        // create a new exposure time depending on if we need to go up in time or down
+                        if (percFullExposure < .30) {
+                            // if our exposure is too low on the high side we will double it,
+                            // assuming it comes in measuring anywhere from 15% to 45% exposure, doubling should hit within our threshold
+                            if (high == currentTest) {
+                                low = high;
+                                high = high * 2;
+                                currentTest = high;
+                            } else {
+                                // if it comes in too low on a median test we are going to run binary search
+                                low = currentTest;
+                                currentTest = (int) (high + low) / 2;
+                            }
+                        } else if (percFullExposure > .90) {
+                            // if we come in too high on exposure on a median or high test we will binary search
+                            high = currentTest;
+                            currentTest = (int) (high + low) / 2;
+                        }
+
+                        // kill the binary search if the low and the high ends of exposure come into contact, threshold contact can be changed as needed from 5 ms
+                        if ((high - low) < 5) {
+                            break;
+                        }
+
+                        SetExposureTime(currentTest);
+                        AvantesAddScan(0, chn, currentTest);
+                        if (pchannel != -1) {
+                            maxv = AvgChannels(smem1, pchannel, 10, maxlen);
+                        }
+
+                        percFullExposure = maxv / maxcounts;
+
+                    }
+
+                    // Need to reset the ltest in the case that dynamic exposure found a different value
+                    ltest = currentTest;
+                    m = maxv;
+
+                    if (debugflag > 0) syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", m, maxv_idx, avantes_inttime);
+
+                    // with the work above I no longer see this as useful and I don't want it setting max time if digital noise and m are both overexposed, could only make things worse
+                    // TODO depricate and remove
+                    // if (m < 1 || digitalnoise == m) {
+                    //   inttime = maxIntTime;
+                    //   if (debugflag)
+                    //     syslog(LOG, "Calculated exposure time: %ld ms\n", inttime);
+                    // } else {
                     float a = maxcounts - digitalnoise;
                     float b = ltest - stest;
                     float c = m - digitalnoise;
@@ -204,13 +262,13 @@ namespace {
                     if (inttime > maxIntTime) {
                         inttime = maxIntTime;
                         if (debugflag) syslog(LOG, " but forced to %ld ms\n", inttime);
-                    } else if (inttime < minIntTime) {
+                    } else if (inttime < minIntTime) { // this should no longer be needed with binary search above but leaving it in for posterity
                         if (m < 200) inttime = maxIntTime;
                         else inttime = minIntTime;
                         if (debugflag) syslog(LOG, " but forced to %ld ms\n", inttime);
                     }
-
                 }
+                // } from if else above that was deprecated TODO remove
                 meas[measpt].realexptime = -inttime;
             }
         }
