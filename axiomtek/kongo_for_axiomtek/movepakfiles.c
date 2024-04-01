@@ -50,7 +50,8 @@ namespace MovePakFiles {
         if (d != NULL) {
             struct dirent *dir;
             while (dir = readdir(d)) {
-                if (dir->d_name[0] == 'u' && strstr(dir->d_name, ".pak") && dir->d_type != DT_DIR) {
+                // if(dir->d_name[0]=='u' && strstr(dir->d_name,".pak") && dir->d_type!=DT_DIR)  //Depricate
+                if (strstr(dir->d_name, ".pak") && dir->d_type != DT_DIR) {
                     if (nrOfFiles == 0) {
                         CreateDirAndCheck(dirname);
                     }
@@ -60,7 +61,7 @@ namespace MovePakFiles {
             }
             closedir(d);
             msleep(128);
-            system("rm -f u*.pak");
+            system("rm -f *.pak");
         }
         syslog(LOG, "MovePakFiles moved %d files. DONE", nrOfFiles);
     }
