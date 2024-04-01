@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <math.h>
 #include <dirent.h>
 #include <time.h>
@@ -93,6 +94,7 @@ namespace {
     int powersave = 0;
     long lastidx = 0;
     int skipmotor = 0;
+    int verboseFileName = 0;
     int startchn = 0;
     int stopchn = 0;
     float batterylimit = 11.0;
@@ -1786,6 +1788,10 @@ int ReadSettingFile(char *filename) {
                 pt = strstr(txt, "=");
                 sscanf(&pt[1], "%d", &skipmotor);
             }
+            if (pt = strstr(txt, "VERBOSEFILENAME=")) {
+                pt = strstr(txt, "=");
+                sscanf(&pt[1], "%d", &verboseFileName);
+            }
         }
     }
     fclose(fil);
@@ -2171,7 +2177,7 @@ int DeleteOldest() {
             if ((dir->d_name[0] == 'r') && dir->d_type == DT_DIR) {
                 if (minr > nr) minr = nr;
             }
-            if ((dir->d_type != DT_DIR) && ((dir->d_name[0] == 'u') && (strstr(dir->d_name, ".pak")))) {
+            if ((dir->d_type != DT_DIR) && (strstr(dir->d_name, ".pak"))) {
                 if (minu > nr) minu = nr;
             }
         }
@@ -2389,9 +2395,19 @@ void ReadTemperature() {
         } else {
             if (realtime != 2) {
                 if (siz_ul > 0) {
-                    sprintf(txt, "u%03x.pak", uploadcnt);
-                    SaveMemoryFile(txt);
-                    uploadcnt++;
+                    if (verboseFileName == 1) {
+                        // set date format from ddmmyy to yymmdd
+                        std::string sorted_date, date = std::to_string(gpsdate);
+                        sorted_date.replace(0, 2, date.substr(4, 6)).replace(2, 2, date.substr(2, 4)).replace(4, 6, date.substr(0, 2));
+                        sprintf(txt, "%s_%s_%i.pak", instrumentname, sorted_date.c_str(), gpstime);
+                        SaveMemoryFile(txt);
+                        uploadcnt++;
+                    } else {
+                        // old method of creating generic file names with a count
+                        sprintf(txt, "u%03x.pak", uploadcnt);
+                        SaveMemoryFile(txt);        
+                        uploadcnt++;
+                    }
                 }
             }
         }
