@@ -49,7 +49,11 @@ void SaveMemoryFile(char *name) {
         if (f < (FILE *) 1) {
             f = fopen(name, "r");
             if (f < (FILE *) 1) {
-                if (!DeleteOldest()) { goto failure; }
+                if (verboseFileName == 1) {
+                    if (!VerboseDeleteOldest()) { goto failure; }
+                } else {
+                    if (!DeleteOldest()) { goto failure; }
+                }
             } else {
                 fclose(f);
                 syslog(LOG, "File is occupied. Waiting 4 seconds");
@@ -66,7 +70,11 @@ void SaveMemoryFile(char *name) {
             int a = fwrite(&buffert[s], 1, (siz - s), f);
             if (a < (siz - s)) {
 
-                if (!DeleteOldest()) { goto failure; }
+                if (verboseFileName == 1) {
+                    if (!VerboseDeleteOldest()) { goto failure; }
+                } else {
+                    if (!DeleteOldest()) { goto failure; }
+                }
                 if (a > 0) {
                     s += a;
                 }
