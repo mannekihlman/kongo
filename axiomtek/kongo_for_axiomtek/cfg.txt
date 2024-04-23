@@ -20,8 +20,11 @@ MOTORSTEPSCOMP=0
 SPECTROMETERTYPE=AVANTES
 
 % If Skipmotor=1 then the scanner will not be used. ONLY FOR TESTING PURPOSES
-SKIPMOTOR=0
+SKIPMOTOR=1
 DELAY=100
+
+% Verbose file name will create files with serial_date(yyyymmdd)_time(24hr).pak, as a 0 it will be u[hex value].pak
+VERBOSEFILENAME=1
 
 PERCENT=0.7
 MAXINTTIME=5000

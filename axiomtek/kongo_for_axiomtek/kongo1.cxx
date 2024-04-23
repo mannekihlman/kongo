@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <math.h>
 #include <dirent.h>
 #include <time.h>
@@ -22,13 +23,15 @@ typedef unsigned char u8;
 
 namespace {
     //----------------------------------------------
-    //Function forward declarations
+    // Function forward declarations
 
     long FileSize(const char *const name);
 
     void ReadSerialNumber();
 
     int DeleteOldest();
+
+    int VerboseDeleteOldest();
 
     int KbdCheck();
 
@@ -75,7 +78,8 @@ namespace {
     u32 hostipaddr;
     char instrumentname[32];
     char spectrometerType[16];
-    long starttime, stoptime, gpstime, gpsdate;
+    char hhmmssSS_time[8];
+    long starttime, stoptime, gpstime, gpsdate, yymmdd_date;
     int gpsok = 0;
     u8 timeisset = 0;
 
@@ -93,6 +97,7 @@ namespace {
     int powersave = 0;
     long lastidx = 0;
     int skipmotor = 0;
+    int verboseFileName = 0;
     int startchn = 0;
     int stopchn = 0;
     float batterylimit = 11.0;
@@ -657,10 +662,15 @@ void GetCPUTime() {
     gpstime = gpstime * 100 + tm->tm_min;
     gpstime = gpstime * 100 + tm->tm_sec;
     gpstime = gpstime * 100 + (tv.tv_usec / 10000);
+    sprintf(hhmmssSS_time, "%08d", gpstime);
 
     gpsdate = tm->tm_mday;
     gpsdate = gpsdate * 100 + tm->tm_mon + 1;
     gpsdate = gpsdate * 100 + ((tm->tm_year + 100) % 100);
+
+    yymmdd_date = ((tm->tm_year + 100) % 100);
+    yymmdd_date = yymmdd_date * 100 + tm->tm_mon + 1;
+    yymmdd_date = yymmdd_date * 100 + tm->tm_mday;
 }
 
 #include "ftpclient.c"
@@ -1786,6 +1796,10 @@ int ReadSettingFile(char *filename) {
                 pt = strstr(txt, "=");
                 sscanf(&pt[1], "%d", &skipmotor);
             }
+            if (pt = strstr(txt, "VERBOSEFILENAME=")) {
+                pt = strstr(txt, "=");
+                sscanf(&pt[1], "%d", &verboseFileName);
+            }
         }
     }
     fclose(fil);
@@ -2006,6 +2020,10 @@ int GetGPS() {
     t.tm_mon = ((gpsdate / 100) % 100) - 1;
     t.tm_mday = ((gpsdate / 10000) % 100);
 
+    yymmdd_date = (gpsdate % 100);
+    yymmdd_date = yymmdd_date * 100 + ((gpsdate / 100) % 100);
+    yymmdd_date = yymmdd_date * 100 + ((gpsdate / 10000) % 100);
+
     dd = gpstime / 100;
     t.tm_sec = (dd % 100);
     t.tm_min = ((dd / 100) % 100);
@@ -2015,6 +2033,7 @@ int GetGPS() {
     if(tt!=0)
       stime(&tt);
 */
+    sprintf(hhmmssSS_time, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
     sprintf(txt, "date -s '%04d-%02d-%02d %02d:%02d:%02d'",
             t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
             t.tm_hour, t.tm_min, t.tm_sec);
@@ -2171,7 +2190,7 @@ int DeleteOldest() {
             if ((dir->d_name[0] == 'r') && dir->d_type == DT_DIR) {
                 if (minr > nr) minr = nr;
             }
-            if ((dir->d_type != DT_DIR) && ((dir->d_name[0] == 'u') && (strstr(dir->d_name, ".pak")))) {
+            if ((dir->d_type != DT_DIR) && (strstr(dir->d_name, ".pak"))) {
                 if (minu > nr) minu = nr;
             }
         }
@@ -2190,6 +2209,70 @@ int DeleteOldest() {
         return (1);
     }
     sprintf(oldestname, "u%03x.pak", minu);
+    syslog(LOG, "Deleting %s to free up space\n", oldestname);
+    remove(oldestname);
+    return (1);
+}
+
+//----------------------------------------------
+int VerboseDeleteOldest() {
+    // if verbose file creation is the method used it will use this function to delete the oldest file folder structure
+    struct dirent *dir;
+    DIR *d;
+
+    // we need to look for the min to find the oldest of the file and directories
+    // folders are saved as date_time and files as serial_date_time
+    int min_directory_date, min_directory_time, min_file_date, min_file_time, t_date, t_time;
+    char oldestname[40];
+    char cmd[20];
+    std::string serial;
+
+    msleep(128);
+    syslog(LOG, "DeleteOldest");
+    DelOldestCnt++;
+    min_directory_date = min_directory_time = min_file_date = min_file_time = 999999;
+
+    d = opendir(".");
+    if (d != NULL) {
+        while (dir = readdir(d)) {
+
+            if ((dir->d_name[6] == '_') && dir->d_type == DT_DIR) {
+                sscanf(&dir->d_name[0], "%u_%u", &t_date, &t_time);
+                if (min_directory_date > t_date || min_directory_time > t_time) {
+                    min_directory_date = t_date;
+                    min_directory_time = t_time;
+                }
+            }
+            if ((dir->d_type != DT_DIR) && (strstr(dir->d_name, ".pak")) && (strstr(dir->d_name, "upload") == NULL)) {
+                sscanf(&dir->d_name[strlen(dir->d_name) - 17], "%u_%u", &t_date, &t_time);
+                if (min_file_date > t_date || min_file_time > t_time) {
+                    // save the serial, this is just in case the file name serial is different after a change in spectrometer
+                    std::string temp_str = dir->d_name;
+                    serial = temp_str.substr(0, strlen(dir->d_name) - 18);
+
+                    min_file_date = t_date;
+                    min_file_time = t_time;
+                }
+            }
+
+        }
+        closedir(d);
+    }
+
+    // We don't need to check time here because if either the file or directory date are at max value the year is not valid anyway
+    if ((min_directory_date == 999999) && (min_file_date == 999999)) {
+        if (DelOldestCnt > 200)
+            Reboot();
+        return (0);
+    }
+    if (min_directory_date != 999999) {
+        sprintf(oldestname, "%06d_%06d", min_directory_date, min_directory_time);
+        sprintf(cmd, "rm -f %s/*", oldestname);
+        system(cmd);
+        rmdir(oldestname);
+        return (1);
+    }
+    sprintf(oldestname, "%s_%06d_%06d.pak", serial.c_str(), min_file_date, min_file_time);
     syslog(LOG, "Deleting %s to free up space\n", oldestname);
     remove(oldestname);
     return (1);
@@ -2389,15 +2472,24 @@ void ReadTemperature() {
         } else {
             if (realtime != 2) {
                 if (siz_ul > 0) {
-                    sprintf(txt, "u%03x.pak", uploadcnt);
-                    SaveMemoryFile(txt);
-                    uploadcnt++;
+                    if (verboseFileName == 1) {
+                        // set date format from ddmmyy to yymmdd
+                        std::string str_date = std::to_string(yymmdd_date).substr(0, 6);
+                        std::string str_time = hhmmssSS_time;
+                        sprintf(txt, "%s_%s_%s.pak", instrumentname, str_date.c_str(), str_time.substr(0, 6).c_str());
+                        SaveMemoryFile(txt);
+                        uploadcnt++;
+                    } else {
+                        // old method of creating generic file names with a count
+                        sprintf(txt, "u%03x.pak", uploadcnt);
+                        SaveMemoryFile(txt);
+                        uploadcnt++;
+                    }
                 }
             }
         }
         if (uploadcnt >= 512) Reboot();
     }
-
 
     //----------------------------------------------
     void RenamePakFile(const char *const name) {
@@ -2466,6 +2558,7 @@ int main(int argc, char *argv[]) {
     }
 
     ReadSettingFile(cfgtxtname);
+    GetGPS();
 
     if (realtime != 2) {
         MovePakFiles::MovePakFiles();
