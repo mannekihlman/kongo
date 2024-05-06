@@ -17,30 +17,30 @@
 
 
 #if defined(__linux) || defined(__APPLE__)
-	#define WM_APP 0
-	#define DLL_INT int
-	#define DLL_bool bool 
-	#define DLL_AvsHandle AvsHandle
+#define WM_APP 0
+#define DLL_INT int
+#define DLL_bool bool
+#define DLL_AvsHandle AvsHandle
 
 #else
 #pragma warning( disable : 4996 )
 
-	#ifndef WINDOWS
-	#if defined(WIN32) || defined(WIN64)
-	#define WINDOWS
-	#endif
-	#endif
+#ifndef WINDOWS
+#if defined(WIN32) || defined(WIN64)
+#define WINDOWS
+#endif
+#endif
 
 
-	#ifdef AS5216_EXPORTS
-	#define DLL_API extern "C" __declspec (dllexport)
-	#else
-	#define DLL_API extern "C" __declspec (dllimport)
-	#endif
+#ifdef AS5216_EXPORTS
+#define DLL_API extern "C" __declspec (dllexport)
+#else
+#define DLL_API extern "C" __declspec (dllimport)
+#endif
 
-	#define DLL_INT DLL_API int __stdcall 
-	#define DLL_AvsHandle DLL_API AvsHandle __stdcall 
-	#define DLL_bool DLL_API bool __stdcall 
+#define DLL_INT DLL_API int __stdcall
+#define DLL_AvsHandle DLL_API AvsHandle __stdcall
+#define DLL_bool DLL_API bool __stdcall
 
 #ifdef USE_POSTMESSAGE
 #define AVS_POSTMESSAGE
@@ -53,7 +53,7 @@
 extern "C" {
 #endif
 
-#pragma pack(push,1)
+#pragma pack(push, 1)
 
 #define     USER_ID_LEN             64
 #define     AVS_SERIAL_LEN          10
@@ -74,9 +74,9 @@ extern "C" {
 #define     SYNC_TRIGGER            1
 #define     LEVEL_TRIGGER_SOURCE    1
 #define     HW_TRIGGER_MODE         1
-#define     SW_TRIGGER_MODE	        0
-#define     EDGE_TRIGGER_SOURCE  	0
-#define     LEVEL_TRIGGER_SOURCE	1
+#define     SW_TRIGGER_MODE            0
+#define     EDGE_TRIGGER_SOURCE    0
+#define     LEVEL_TRIGGER_SOURCE    1
 #define     EXTERNAL_TRIGGER        0
 
 #define     ILX_FIRST_USED_DARK_PIXEL        2
@@ -116,185 +116,166 @@ extern "C" {
 #define     NR_ANALOG_OUTPUTS               2
 
 
-long const INVALID_AVS_HANDLE_VALUE     = 1000L;
+long const INVALID_AVS_HANDLE_VALUE = 1000L;
 
-typedef long  AvsHandle;
+typedef long AvsHandle;
 
-typedef enum
-{
-        UNKNOWN,
-        AVAILABLE,
-        IN_USE_BY_APPLICATION,
-        IN_USE_BY_OTHER,
-        IN_USE_LOCAL
+typedef enum {
+    UNKNOWN,
+    AVAILABLE,
+    IN_USE_BY_APPLICATION,
+    IN_USE_BY_OTHER,
+    IN_USE_LOCAL
 } DEVICE_STATUS;
 
 
-typedef struct 
-{
-    char            SerialNumber[AVS_SERIAL_LEN];
-    char            UserFriendlyName[USER_ID_LEN];
-    unsigned char   Status;
+typedef struct {
+    char SerialNumber[AVS_SERIAL_LEN];
+    char UserFriendlyName[USER_ID_LEN];
+    unsigned char Status;
 } AvsIdentityType;
 
 typedef uint8 SensorType;
 
-typedef struct
-{
-    SensorType              m_SensorType;
-    uint16                  m_NrPixels;
-    float                   m_aFit[NR_WAVELEN_POL_COEF];
-    bool                    m_NLEnable;
-    double                  m_aNLCorrect[NR_NONLIN_POL_COEF];
-    double                  m_aLowNLCounts;
-    double                  m_aHighNLCounts;
-    float                   m_Gain[MAX_VIDEO_CHANNELS];
-    float                   m_Reserved;
-    float                   m_Offset[MAX_VIDEO_CHANNELS];
-    float                   m_ExtOffset;
-    uint16                  m_DefectivePixels[NR_DEFECTIVE_PIXELS];
+typedef struct {
+    SensorType m_SensorType;
+    uint16 m_NrPixels;
+    float m_aFit[NR_WAVELEN_POL_COEF];
+    bool m_NLEnable;
+    double m_aNLCorrect[NR_NONLIN_POL_COEF];
+    double m_aLowNLCounts;
+    double m_aHighNLCounts;
+    float m_Gain[MAX_VIDEO_CHANNELS];
+    float m_Reserved;
+    float m_Offset[MAX_VIDEO_CHANNELS];
+    float m_ExtOffset;
+    uint16 m_DefectivePixels[NR_DEFECTIVE_PIXELS];
 } DetectorType;
 
-typedef struct
-{
-    uint16                  m_SmoothPix;
-    uint8                   m_SmoothModel;
+typedef struct {
+    uint16 m_SmoothPix;
+    uint8 m_SmoothModel;
 } SmoothingType;
 
-typedef struct
-{
-    SmoothingType           m_Smoothing;
-    float                   m_CalInttime;
-    float                   m_aCalibConvers[MAX_NR_PIXELS];
+typedef struct {
+    SmoothingType m_Smoothing;
+    float m_CalInttime;
+    float m_aCalibConvers[MAX_NR_PIXELS];
 } SpectrumCalibrationType;
 
-typedef struct
-{
+typedef struct {
     SpectrumCalibrationType m_IntensityCalib;
-    uint8                   m_CalibrationType;
-    uint32                  m_FiberDiameter;
+    uint8 m_CalibrationType;
+    uint32 m_FiberDiameter;
 } IrradianceType;
 
-typedef struct
-{
-    float                   m_aSpectrumCorrect[MAX_NR_PIXELS];
-} SpectrumCorrectionType; 
+typedef struct {
+    float m_aSpectrumCorrect[MAX_NR_PIXELS];
+} SpectrumCorrectionType;
 
-typedef struct
-{
-    uint8                   m_Enable;
-    uint8                   m_ForgetPercentage;
+typedef struct {
+    uint8 m_Enable;
+    uint8 m_ForgetPercentage;
 } DarkCorrectionType;
 
-typedef struct
-{
-    uint8                   m_Mode;
-    uint8                   m_Source;
-    uint8                   m_SourceType;
+typedef struct {
+    uint8 m_Mode;
+    uint8 m_Source;
+    uint8 m_SourceType;
 } TriggerType;
 
-typedef struct
-{
-    uint16                  m_StrobeControl;
-    uint32                  m_LaserDelay;
-    uint32                  m_LaserWidth;
-    float                   m_LaserWaveLength;
-    uint16                  m_StoreToRam;
-} ControlSettingsType; 
+typedef struct {
+    uint16 m_StrobeControl;
+    uint32 m_LaserDelay;
+    uint32 m_LaserWidth;
+    float m_LaserWaveLength;
+    uint16 m_StoreToRam;
+} ControlSettingsType;
 
-typedef struct
-{
-    uint16                  m_StartPixel;
-    uint16                  m_StopPixel;
-    float                   m_IntegrationTime;
-    uint32                  m_IntegrationDelay;
-    uint32                  m_NrAverages;
-    DarkCorrectionType      m_CorDynDark;
-    SmoothingType           m_Smoothing;
-    uint8                   m_SaturationDetection;
-    TriggerType             m_Trigger;
-    ControlSettingsType     m_Control;
+typedef struct {
+    uint16 m_StartPixel;
+    uint16 m_StopPixel;
+    float m_IntegrationTime;
+    uint32 m_IntegrationDelay;
+    uint32 m_NrAverages;
+    DarkCorrectionType m_CorDynDark;
+    SmoothingType m_Smoothing;
+    uint8 m_SaturationDetection;
+    TriggerType m_Trigger;
+    ControlSettingsType m_Control;
 } MeasConfigType;
 
-typedef struct
-{
-    uint16                  m_Date;
-    uint16                  m_Time;
+typedef struct {
+    uint16 m_Date;
+    uint16 m_Time;
 } TimeStampType;
 
-typedef struct
-{
-    bool                    m_Enable;
-    uint8                   m_SpectrumType;
-    char                    m_aFileRootName[ROOT_NAME_LEN];
-    TimeStampType           m_TimeStamp;
+typedef struct {
+    bool m_Enable;
+    uint8 m_SpectrumType;
+    char m_aFileRootName[ROOT_NAME_LEN];
+    TimeStampType m_TimeStamp;
 } SDCardType;
 
-typedef struct
-{
-    bool                    m_Enable;
-    MeasConfigType          m_Meas;
-    int16                   m_Nmsr;
-    SDCardType              m_SDCard;
+typedef struct {
+    bool m_Enable;
+    MeasConfigType m_Meas;
+    int16 m_Nmsr;
+    SDCardType m_SDCard;
 } StandAloneType;
 
-typedef struct
-{
-    float                   m_aFit[NR_TEMP_POL_COEF];
+typedef struct {
+    float m_aFit[NR_TEMP_POL_COEF];
 } TempSensorType;
 
-typedef struct
-{
-    bool                    m_Enable;
-    float                   m_Setpoint;     // [degree Celsius]
-    float                   m_aFit[NR_DAC_POL_COEF];
+typedef struct {
+    bool m_Enable;
+    float m_Setpoint;     // [degree Celsius]
+    float m_aFit[NR_DAC_POL_COEF];
 } TecControlType;
 
-typedef struct
-{
-    float                   AnalogLow[2];
-    float                   AnalogHigh[2];
-    float                   DigitalLow[10];
-    float                   DigitalHigh[10];
+typedef struct {
+    float AnalogLow[2];
+    float AnalogHigh[2];
+    float DigitalLow[10];
+    float DigitalHigh[10];
 } ProcessControlType;
 
 #define DEVICE_CONFIG_TYPE_SIZE   10 + USER_ID_LEN + sizeof(DetectorType) + sizeof(IrradianceType) + sizeof(SpectrumCalibrationType) + sizeof(SpectrumCorrectionType) + sizeof(StandAloneType) + (sizeof(TempSensorType)*MAX_TEMP_SENSORS) + sizeof(TecControlType) + sizeof(ProcessControlType)
 
 
-const uint16    SETTINGS_RESERVED_LEN   = ((62*1024) -  sizeof(uint32) -
-                                                        (sizeof(uint16) +   // m_Len
-                                                         sizeof(uint16) +  // m_ConfigVersion
-                                                         USER_ID_LEN +
-                                                         sizeof(DetectorType) +
-                                                         sizeof(IrradianceType) +
-                                                         sizeof(SpectrumCalibrationType) +
-                                                         sizeof(SpectrumCorrectionType) +
-                                                         sizeof(StandAloneType) +
-                                                        (sizeof(TempSensorType)*MAX_TEMP_SENSORS) +
-                                                         sizeof(TecControlType) +
-                                                         sizeof(ProcessControlType)
-                                                        )
+const uint16 SETTINGS_RESERVED_LEN = ((62 * 1024) - sizeof(uint32) -
+                                      (sizeof(uint16) +   // m_Len
+                                       sizeof(uint16) +  // m_ConfigVersion
+                                       USER_ID_LEN +
+                                       sizeof(DetectorType) +
+                                       sizeof(IrradianceType) +
+                                       sizeof(SpectrumCalibrationType) +
+                                       sizeof(SpectrumCorrectionType) +
+                                       sizeof(StandAloneType) +
+                                       (sizeof(TempSensorType) * MAX_TEMP_SENSORS) +
+                                       sizeof(TecControlType) +
+                                       sizeof(ProcessControlType)
+                                      )
 
-                                           );
+);
 
-typedef struct
-{
-    uint16                  m_Len;
-    uint16                  m_ConfigVersion;
-    char                    m_aUserFriendlyId[USER_ID_LEN];
-    DetectorType            m_Detector;
-    IrradianceType          m_Irradiance;
+typedef struct {
+    uint16 m_Len;
+    uint16 m_ConfigVersion;
+    char m_aUserFriendlyId[USER_ID_LEN];
+    DetectorType m_Detector;
+    IrradianceType m_Irradiance;
     SpectrumCalibrationType m_Reflectance;
-    SpectrumCorrectionType  m_SpectrumCorrect;
-    StandAloneType          m_StandAlone;
-    TempSensorType          m_aTemperature[MAX_TEMP_SENSORS];
-    TecControlType          m_TecControl;
-    ProcessControlType      m_ProcessControl;
-    uint8                   m_aReserved[SETTINGS_RESERVED_LEN];
+    SpectrumCorrectionType m_SpectrumCorrect;
+    StandAloneType m_StandAlone;
+    TempSensorType m_aTemperature[MAX_TEMP_SENSORS];
+    TecControlType m_TecControl;
+    ProcessControlType m_ProcessControl;
+    uint8 m_aReserved[SETTINGS_RESERVED_LEN];
 } DeviceConfigType;
 
-typedef enum
-{
+typedef enum {
     SENS_HAMS8378_256 = 1,
     SENS_HAMS8378_1024,
     SENS_ILX554,
@@ -333,7 +314,7 @@ typedef enum
 // Remark(s)    : Blocks application
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_Init( short a_Port );
+DLL_INT AVS_Init(short a_Port);
 
 //----------------------------------------------------------------------------
 //
@@ -349,7 +330,7 @@ DLL_INT AVS_Init( short a_Port );
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_Done( void );
+DLL_INT AVS_Done(void);
 
 //----------------------------------------------------------------------------
 //
@@ -388,11 +369,11 @@ DLL_INT AVS_GetNrOfDevices(void);
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetList
-(
-    unsigned int        a_ListSize,
-    unsigned int*       a_pRequiredSize,
-    AvsIdentityType*    a_pList
-);
+        (
+                unsigned int a_ListSize,
+                unsigned int *a_pRequiredSize,
+                AvsIdentityType *a_pList
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -409,13 +390,13 @@ DLL_INT AVS_GetList
 //
 //----------------------------------------------------------------------------
 DLL_AvsHandle AVS_Activate
-(
-    AvsIdentityType*    a_pDeviceId
-);
+        (
+                AvsIdentityType *a_pDeviceId
+        );
 
 
 //----------------------------------------------------------------------------
-DLL_AvsHandle AVS_ActivateServer( AvsIdentityType*  a_pDeviceId , int application );
+DLL_AvsHandle AVS_ActivateServer(AvsIdentityType *a_pDeviceId, int application);
 
 
 //----------------------------------------------------------------------------
@@ -433,9 +414,9 @@ DLL_AvsHandle AVS_ActivateServer( AvsIdentityType*  a_pDeviceId , int applicatio
 //
 //----------------------------------------------------------------------------
 DLL_bool AVS_Deactivate
-(
-    AvsHandle    a_hHandle
-);
+        (
+                AvsHandle a_hHandle
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -450,14 +431,14 @@ DLL_bool AVS_Deactivate
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_AvsHandle  AVS_GetHandleFromSerial( char *a_pSerial );
+DLL_AvsHandle AVS_GetHandleFromSerial(char *a_pSerial);
 
 
 //----------------------------------------------------------------------------
 //
 // Name         : AVS_GetStatusBySerial
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetStatusBySerial( char *a_pSerial, int *a_status );
+DLL_INT AVS_GetStatusBySerial(char *a_pSerial, int *a_status);
 
 
 //----------------------------------------------------------------------------
@@ -474,7 +455,7 @@ DLL_INT AVS_GetStatusBySerial( char *a_pSerial, int *a_status );
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_bool AVS_Register( void *a_Hwnd );
+DLL_bool AVS_Register(void *a_Hwnd);
 
 //----------------------------------------------------------------------------
 //
@@ -497,10 +478,10 @@ DLL_bool AVS_Register( void *a_Hwnd );
 #ifdef AVS_POSTMESSAGE
 DLL_INT AVS_Measure( AvsHandle a_hHandle, void *a_hWnd, short a_Nmsr );
 #else
-DLL_INT AVS_Measure( AvsHandle a_hHandle, void (*__Done)(AvsHandle*, int*), short a_Nmsr );
+DLL_INT AVS_Measure(AvsHandle a_hHandle, void (*__Done)(AvsHandle *, int *), short a_Nmsr);
 #endif
 
-DLL_INT AVS_MeasureCallback( AvsHandle a_hHandle, void (*__Done)(AvsHandle*, int*), short a_Nmsr );
+DLL_INT AVS_MeasureCallback(AvsHandle a_hHandle, void (*__Done)(AvsHandle *, int *), short a_Nmsr);
 
 //----------------------------------------------------------------------------
 //
@@ -521,7 +502,7 @@ DLL_INT AVS_MeasureCallback( AvsHandle a_hHandle, void (*__Done)(AvsHandle*, int
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_PrepareMeasure( AvsHandle a_hDevice, MeasConfigType* a_pMeasConfig );
+DLL_INT AVS_PrepareMeasure(AvsHandle a_hDevice, MeasConfigType *a_pMeasConfig);
 
 //----------------------------------------------------------------------------
 //
@@ -538,7 +519,7 @@ DLL_INT AVS_PrepareMeasure( AvsHandle a_hDevice, MeasConfigType* a_pMeasConfig )
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_StopMeasure( AvsHandle a_hDevice );
+DLL_INT AVS_StopMeasure(AvsHandle a_hDevice);
 
 //----------------------------------------------------------------------------
 //
@@ -555,7 +536,7 @@ DLL_INT AVS_StopMeasure( AvsHandle a_hDevice );
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_PollScan( AvsHandle a_hDevice );
+DLL_INT AVS_PollScan(AvsHandle a_hDevice);
 
 //----------------------------------------------------------------------------
 //
@@ -576,7 +557,7 @@ DLL_INT AVS_PollScan( AvsHandle a_hDevice );
 // Remark(s)    : array size not checked
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetScopeData( AvsHandle a_hDevice, unsigned int* a_pTimeLabel, double* a_pSpectrum );
+DLL_INT AVS_GetScopeData(AvsHandle a_hDevice, unsigned int *a_pTimeLabel, double *a_pSpectrum);
 
 //----------------------------------------------------------------------------
 //
@@ -596,10 +577,10 @@ DLL_INT AVS_GetScopeData( AvsHandle a_hDevice, unsigned int* a_pTimeLabel, doubl
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetSaturatedPixels
-(
-    AvsHandle       a_hDevice,
-    unsigned char*  a_pSaturated
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char *a_pSaturated
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -617,7 +598,7 @@ DLL_INT AVS_GetSaturatedPixels
 // Remark(s)    : array size not checked
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetLambda( AvsHandle a_hDevice, double* a_pWaveLength);
+DLL_INT AVS_GetLambda(AvsHandle a_hDevice, double *a_pWaveLength);
 
 //----------------------------------------------------------------------------
 //
@@ -634,7 +615,7 @@ DLL_INT AVS_GetLambda( AvsHandle a_hDevice, double* a_pWaveLength);
 // Remark(s)    : -
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetNumPixels( AvsHandle a_hDevice, unsigned short* a_pNumPixels );
+DLL_INT AVS_GetNumPixels(AvsHandle a_hDevice, unsigned short *a_pNumPixels);
 
 //----------------------------------------------------------------------------
 //
@@ -654,12 +635,12 @@ DLL_INT AVS_GetNumPixels( AvsHandle a_hDevice, unsigned short* a_pNumPixels );
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetParameter
-(
-    AvsHandle           a_hDevice,
-    unsigned int        a_Size,
-    unsigned int*   	a_pRequiredSize,
-    DeviceConfigType*   a_pDeviceParm
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned int a_Size,
+                unsigned int *a_pRequiredSize,
+                DeviceConfigType *a_pDeviceParm
+        );
 //----------------------------------------------------------------------------
 //
 // Name         : AVS_SetParameter
@@ -676,10 +657,10 @@ DLL_INT AVS_GetParameter
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetParameter
-(
-    AvsHandle           a_hDevice,
-    DeviceConfigType*   a_pDeviceParm
-);
+        (
+                AvsHandle a_hDevice,
+                DeviceConfigType *a_pDeviceParm
+        );
 //----------------------------------------------------------------------------
 //
 // Name         : AVS_GetVersionInfo
@@ -698,18 +679,18 @@ DLL_INT AVS_SetParameter
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetVersionInfo
-(
-    AvsHandle       a_hDevice,
-    char*           a_pFPGAVersion,
-    char*           a_pFirmwareVersion,
-    char*           a_pDLLVersion
-);
+        (
+                AvsHandle a_hDevice,
+                char *a_pFPGAVersion,
+                char *a_pFirmwareVersion,
+                char *a_pDLLVersion
+        );
 
 
 DLL_INT AVS_GetDLLVersion
-(
-    char*    a_pVersionString
-);
+        (
+                char *a_pVersionString
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -729,10 +710,10 @@ DLL_INT AVS_GetDLLVersion
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetSyncMode
-(
-	AvsHandle	a_hDevice,
-	unsigned char	a_Enable
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_Enable
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -751,10 +732,10 @@ DLL_INT AVS_SetSyncMode
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetPrescanMode
-(
-    AvsHandle       a_hDevice,
-    bool            a_Prescan
-);
+        (
+                AvsHandle a_hDevice,
+                bool a_Prescan
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -774,10 +755,10 @@ DLL_INT AVS_SetPrescanMode
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_UseHighResAdc
-(
-    AvsHandle       a_hDevice,
-    bool            a_Enable
-);
+        (
+                AvsHandle a_hDevice,
+                bool a_Enable
+        );
 
 
 //----------------------------------------------------------------------------
@@ -797,11 +778,11 @@ DLL_INT AVS_UseHighResAdc
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetAnalogIn
-(
-    AvsHandle       a_hDevice,
-    unsigned char   a_AnalogInId,
-    float*          a_pAnalogIn
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_AnalogInId,
+                float *a_pAnalogIn
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -820,11 +801,11 @@ DLL_INT AVS_GetAnalogIn
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_GetDigIn
-(
-    AvsHandle       a_hDevice,
-    unsigned char   a_DigInId,
-    unsigned char*  a_pDigIn
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_DigInId,
+                unsigned char *a_pDigIn
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -843,11 +824,11 @@ DLL_INT AVS_GetDigIn
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetAnalogOut
-(
-	AvsHandle	a_hDevice,
-	unsigned char	a_PortId,
-	float		a_Value
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_PortId,
+                float a_Value
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -866,11 +847,11 @@ DLL_INT AVS_SetAnalogOut
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetDigOut
-(
-    AvsHandle       a_hDevice,
-    unsigned char   a_PortId,
-    unsigned char   a_Status
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_PortId,
+                unsigned char a_Status
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -890,12 +871,12 @@ DLL_INT AVS_SetDigOut
 //
 //----------------------------------------------------------------------------
 DLL_INT AVS_SetPwmOut
-(
-    AvsHandle       a_hDevice,
-    unsigned char   a_PortId,
-    unsigned long   a_Freq,
-    unsigned char   a_Duty
-);
+        (
+                AvsHandle a_hDevice,
+                unsigned char a_PortId,
+                unsigned long a_Freq,
+                unsigned char a_Duty
+        );
 
 //----------------------------------------------------------------------------
 //
@@ -915,11 +896,11 @@ DLL_INT AVS_SetPwmOut
 // Remark(s)  : Should be called by the application after calling AVS_GetScopeData
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetDarkPixelData 
-(
-    AvsHandle       a_hDevice,
-    double*         a_pDarkData
-);
+DLL_INT AVS_GetDarkPixelData
+        (
+                AvsHandle a_hDevice,
+                double *a_pDarkData
+        );
 
 
 //----------------------------------------------------------------------------
@@ -938,7 +919,7 @@ DLL_INT AVS_GetDarkPixelData
 // Remark(s)  : Should be called by the application after calling AVS_GetScopeData
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetComPortName( AvsIdentityType*  a_pDeviceId, char *a_pIp, int *a_size );
+DLL_INT AVS_GetComPortName(AvsIdentityType *a_pDeviceId, char *a_pIp, int *a_size);
 
 //----------------------------------------------------------------------------
 //
@@ -951,7 +932,7 @@ DLL_INT AVS_GetComPortName( AvsIdentityType*  a_pDeviceId, char *a_pIp, int *a_s
 //    ETH   = 2
 //
 //----------------------------------------------------------------------------
-DLL_INT AVS_GetComType( AvsIdentityType*  a_pDeviceId, int *a_type );
+DLL_INT AVS_GetComType(AvsIdentityType *a_pDeviceId, int *a_type);
 
 //----------------------------------------------------------------------------
 // End of definitions
