@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
+
+// Compiler cannot find C++ library. Solve by avioding string
+// #include <string>
+
 #include <math.h>
 #include <dirent.h>
 #include <time.h>
@@ -78,7 +81,7 @@ namespace {
     u32 hostipaddr;
     char instrumentname[32];
     char spectrometerType[16];
-    char hhmmssSS_time[8];
+    char hhmmss_time[8];
     long starttime, stoptime, gpstime, gpsdate, yymmdd_date;
     int gpsok = 0;
     u8 timeisset = 0;
@@ -661,8 +664,7 @@ void GetCPUTime() {
     gpstime = tm->tm_hour;
     gpstime = gpstime * 100 + tm->tm_min;
     gpstime = gpstime * 100 + tm->tm_sec;
-    gpstime = gpstime * 100 + (tv.tv_usec / 10000);
-    sprintf(hhmmssSS_time, "%08d", gpstime);
+    sprintf(hhmmss_time, "%06d", gpstime);
 
     gpsdate = tm->tm_mday;
     gpsdate = gpsdate * 100 + tm->tm_mon + 1;
@@ -2033,13 +2035,13 @@ int GetGPS() {
     if(tt!=0)
       stime(&tt);
 */
-    sprintf(hhmmssSS_time, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
+    sprintf(hhmmss_time, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
     sprintf(txt, "date -s '%04d-%02d-%02d %02d:%02d:%02d'",
             t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
             t.tm_hour, t.tm_min, t.tm_sec);
 
     system(txt);
-    syslog(LOG, txt);
+    syslog(LOG,"%s", txt);
 
     timeisset = 1;
     TouchFile(uploadname);
@@ -2085,7 +2087,7 @@ void UpdateEthernet() {
                         sprintf(ethx, "eth%d", i);
                         if (strstr(txt, ethx) == 0) {
                             sprintf(txt, "ifdown eth%d ; ifup eth%d", i, i);
-                            syslog(LOG, txt);
+                            syslog(LOG,"%s", txt);
                             system(txt);
                         }
                     }
@@ -2225,7 +2227,7 @@ int VerboseDeleteOldest() {
     int min_directory_date, min_directory_time, min_file_date, min_file_time, t_date, t_time;
     char oldestname[40];
     char cmd[20];
-    std::string serial;
+    char serial[256];
 
     msleep(128);
     syslog(LOG, "DeleteOldest");
@@ -2247,8 +2249,10 @@ int VerboseDeleteOldest() {
                 sscanf(&dir->d_name[strlen(dir->d_name) - 17], "%u_%u", &t_date, &t_time);
                 if (min_file_date > t_date || min_file_time > t_time) {
                     // save the serial, this is just in case the file name serial is different after a change in spectrometer
-                    std::string temp_str = dir->d_name;
-                    serial = temp_str.substr(0, strlen(dir->d_name) - 18);
+
+                    strncpy(serial, dir->d_name, strlen(dir->d_name) - 18);
+                    // std::string temp_str = dir->d_name;                    
+                    // serial = temp_str.substr(0, strlen(dir->d_name) - 18);
 
                     min_file_date = t_date;
                     min_file_time = t_time;
@@ -2272,7 +2276,7 @@ int VerboseDeleteOldest() {
         rmdir(oldestname);
         return (1);
     }
-    sprintf(oldestname, "%s_%06d_%06d.pak", serial.c_str(), min_file_date, min_file_time);
+    sprintf(oldestname, "%s_%06d_%06d.pak", serial, min_file_date, min_file_time);
     syslog(LOG, "Deleting %s to free up space\n", oldestname);
     remove(oldestname);
     return (1);
@@ -2474,9 +2478,10 @@ void ReadTemperature() {
                 if (siz_ul > 0) {
                     if (verboseFileName == 1) {
                         // set date format from ddmmyy to yymmdd
-                        std::string str_date = std::to_string(yymmdd_date).substr(0, 6);
-                        std::string str_time = hhmmssSS_time;
-                        sprintf(txt, "%s_%s_%s.pak", instrumentname, str_date.c_str(), str_time.substr(0, 6).c_str());
+                        // std::string str_date = std::to_string(yymmdd_date).substr(0, 6);
+                        // std::string str_time = hhmmssSS_time;
+                        sprintf(txt, "%s_%s_%s.pak", instrumentname, yymmdd_date, hhmmss_time);
+                        
                         SaveMemoryFile(txt);
                         uploadcnt++;
                     } else {

@@ -65,8 +65,9 @@ namespace MovePakFiles {
                 }
                 // no proper pak file with time and date were found, set time and date to right now
                 if (maxDate == 0 && maxTime == 0) {
-                    std::string t_string = hhmmssSS_time;
-                    sprintf(dirname, "%06d_%s", yymmdd_date, t_string.substr(0, 6).c_str());
+                    // std::string t_string = hhmmssSS_time;
+                    // sprintf(dirname, "%06d_%s", yymmdd_date, t_string.substr(0, 6).c_str());
+                    sprintf(dirname, "%06d_%s", yymmdd_date, hhmmss_time);
                 } else {
                     sprintf(dirname, "%06d_%06d", maxDate, maxTime);
                 }
