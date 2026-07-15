@@ -24,6 +24,10 @@ typedef unsigned long u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
 
+long avantes_stest = 20;
+long avantes_ltest = 100;
+long avantes_maxcounts = 16384;
+
 namespace {
     //----------------------------------------------
     // Function forward declarations
@@ -81,7 +85,7 @@ namespace {
     u32 hostipaddr;
     char instrumentname[32];
     char spectrometerType[16];
-    char hhmmss_time[8];
+    char hhmmss_time[16];
     long starttime, stoptime, gpstime, gpsdate, yymmdd_date;
     int gpsok = 0;
     u8 timeisset = 0;
@@ -1237,7 +1241,7 @@ int rotator[2] = {0, 0};
 u16 lastPowerOn = 0;
 
 //----------------------------------------------
-int sendPower(int power, int m1, int m2) {
+void sendPower(int power, int m1, int m2) {
     u8 activate_mask = 0U;
     u8 deactivate_mask = 0U;
 
@@ -1631,6 +1635,11 @@ int ReadSettingFile(char *filename) {
                 sscanf(&pt[1], "%s", temp);
                 strncpy(spectrometerType, temp, 10);
             }
+            if(pt=strstr(txt,"AVANTES_EXPOSURE="))
+            {
+                pt=strstr(txt,"=");
+                sscanf(&pt[1],"%d %d %d",&avantes_stest,&avantes_ltest,&avantes_maxcounts);
+            }
             if (pt = strstr(txt, "SERVER=")) {
                 struct sockaddr_in address;
                 struct hostent *hname;
@@ -1792,7 +1801,7 @@ int ReadSettingFile(char *filename) {
                 tiltX *= 10.0;
                 tiltY *= 10.0;
                 if (debugflag > 1)
-                    syslog(LOG, "COMPASS=%.f %.f %.f %.f\n", compassdir * 0.1, tiltX * 0.1, tiltY * 0.1);
+                    syslog(LOG, "COMPASS=%.f %.f %.f\n", compassdir * 0.1, tiltX * 0.1, tiltY * 0.1);
             }
             if (pt = strstr(txt, "SKIPMOTOR=")) {
                 pt = strstr(txt, "=");
@@ -2177,7 +2186,7 @@ int DeleteOldest() {
 
     int minr, minu, nr;
     char oldestname[20];
-    char cmd[20];
+    char cmd[25];
 
     msleep(128);
     syslog(LOG, "DeleteOldest");
@@ -2226,7 +2235,7 @@ int VerboseDeleteOldest() {
     // folders are saved as date_time and files as serial_date_time
     int min_directory_date, min_directory_time, min_file_date, min_file_time, t_date, t_time;
     char oldestname[40];
-    char cmd[20];
+    char cmd[45];
     char serial[256];
 
     msleep(128);

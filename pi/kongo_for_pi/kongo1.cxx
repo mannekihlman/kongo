@@ -1639,7 +1639,6 @@ int ReadSettingFile(char *filename) {
             {
                 pt=strstr(txt,"=");
                 sscanf(&pt[1],"%d %d %d",&avantes_stest,&avantes_ltest,&avantes_maxcounts);
-                strncpy(spectrometerType,temp,10);
             }
             if (pt = strstr(txt, "SERVER=")) {
                 struct sockaddr_in address;
