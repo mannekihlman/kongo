@@ -166,39 +166,36 @@ namespace {
             if (debugflag) syslog(LOG, "Using zenith exposure time: %ld ms\n", inttime);
         } else if (inttime < 0) {
             SetSumCnt(1);
-            const short stest = 24;
-            short ltest = 300; //no longer a constant because it can change with dynamic handling of exposure
-            const long maxcounts = 16384;
 
-            SetExposureTime(stest);
-            if (AvantesAddScan(0, chn, stest)) {
+            SetExposureTime(avantes_stest);
+            if (AvantesAddScan(0, chn, avantes_stest)) {
                 inttime = 20;
             } else {
                 if (pchannel != -1) {
                     maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                 }
 
-                float digitalNoisePercentage = maxv / maxcounts;
+                float digitalNoisePercentage = maxv / avantes_maxcounts;
                 digitalnoise = maxv;
                 if (debugflag > 0)
                     syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", digitalnoise, maxv_idx, avantes_inttime);
 
                 // if the digital noise is already 70% or higher just use the min test
                 if (digitalNoisePercentage > m_percent) {
-                    inttime = stest;
+                    inttime = avantes_stest;
                 } else {
-                    SetExposureTime(ltest);
-                    AvantesAddScan(0, chn, ltest);
+                    SetExposureTime(avantes_ltest);
+                    AvantesAddScan(0, chn, avantes_ltest);
                     if (pchannel != -1) {
                         maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                     }
 
                     // find percentage of the maxv returned versus full exposure
-                    float percFullExposure = maxv / maxcounts;
+                    float percFullExposure = maxv / avantes_maxcounts;
                     // low, high, and currentTest are for a binary search
-                    short low = stest;
-                    short high = ltest;
-                    short currentTest = ltest;
+                    short low = avantes_stest;
+                    short high = avantes_ltest;
+                    short currentTest = avantes_ltest;
 
                     // If we didn't meet exposure limits we need to keep searching to find it
                     // We want exposure to land between 30 and 90 percent
@@ -234,12 +231,12 @@ namespace {
                             maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                         }
 
-                        percFullExposure = maxv / maxcounts;
+                        percFullExposure = maxv / avantes_maxcounts;
 
                     }
 
                     // Need to reset the ltest in the case that dynamic exposure found a different value
-                    ltest = currentTest;
+                    avantes_ltest = currentTest;
                     m = maxv;
 
                     if (debugflag > 0) syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", m, maxv_idx, avantes_inttime);
@@ -251,12 +248,12 @@ namespace {
                     //   if (debugflag)
                     //     syslog(LOG, "Calculated exposure time: %ld ms\n", inttime);
                     // } else {
-                    float a = maxcounts - digitalnoise;
-                    float b = ltest - stest;
+                    float a = avantes_maxcounts - digitalnoise;
+                    float b = avantes_ltest - avantes_stest;
                     float c = m - digitalnoise;
                     float d = m_percent * a * b / c;
                     inttime = d;
-                    inttime += stest;
+                    inttime += avantes_stest;
 
                     if (debugflag) syslog(LOG, "Calculated exposure time: %ld ms", inttime);
                     if (inttime > maxIntTime) {

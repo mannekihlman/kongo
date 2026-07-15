@@ -16,10 +16,10 @@
 // A3 (pin 21) Power supply voltage divided by 10
 
 namespace {
-    const char setPinDir[] = ":06000000d7..\r";           // Will configure all IO except D3 and D5 to outputs
-    const char setOutCfg[] = ":06000100ff..\r";           // Will configure all IO to push-pull
-    const char readInputRegister[] = ":0300030001..\r";   // Command for reading all IO inputs
-    const char readAllADCRegisters[] = ":0400000008..\r"; // Command for reading all 8 ADC channels
+    const char setPinDir[] = ":06000000d7..\r\n";           // Will configure all IO except D3 and D5 to outputs
+    const char setOutCfg[] = ":06000100ff..\r\n";           // Will configure all IO to push-pull
+    const char readInputRegister[] = ":0300030001..\r\n";   // Command for reading all IO inputs
+    const char readAllADCRegisters[] = ":0400000008..\r\n"; // Command for reading all 8 ADC channels
 
     const u8 TEMP_SENSOR_PIN = 7U;
 
@@ -43,7 +43,7 @@ namespace {
             t += (tv2.tv_usec - tv1.tv_usec);
             syslog(LOG, "Time %d\n", t);
         }
-        while (CheckSerial(port_adc, 1) && (j < maxLength)) {
+        while (CheckSerial(port_adc, 2) && (j < maxLength)) {
             j += ReadSerial(port_adc, &txt[j], maxLength - j);
         }
         txt[j] = 0;
@@ -68,7 +68,7 @@ namespace Taskit {
         ourOutputs &= ~deactivate_mask;
         ourOutputs |= activate_mask;
         char setOutPins[100];
-        sprintf(setOutPins, ":06000200%02x..\r", ourOutputs);
+        sprintf(setOutPins, ":06000200%02x..\r\n", ourOutputs);
         const char *const p = SendADCCommand(setOutPins);
         int success = 1;
         if (strncasecmp(p, setOutPins, 9)) {

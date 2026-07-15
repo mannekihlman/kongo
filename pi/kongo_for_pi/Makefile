@@ -10,7 +10,7 @@ all: kongo
 INCLUDE = .
 
 kongo:
-	$(CC) -o kongo kongo1.cxx -lusb-1.0 -lavs -lrsb10x -lm -L.
+	$(CC) -o kongo kongo1.cxx -lusb-1.0 -lavs -lm -L.
 
 clean:
 	rm -f kongo
