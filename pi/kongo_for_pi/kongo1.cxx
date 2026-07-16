@@ -89,7 +89,6 @@ namespace {
     char hhmmss_time[16];
     long starttime, stoptime, gpstime, gpsdate, yymmdd_date;
     int gpsok = 0;
-    u8 timeisset = 0;
 
     char txt[1024];
 
@@ -2000,8 +1999,6 @@ int GetGPS() {
     gpsok = 0;
     ret = 0;
 
-    u8 timeWasSetBefore = timeisset;
-
     ret = GetGPSnew();
 
     if (ret < 2 || gpsdate == 0 || gpstime == 0) {
@@ -2036,7 +2033,6 @@ int GetGPS() {
     system(txt);
     syslog(LOG,"%s", txt);
 
-    timeisset = 1;
     TouchFile(uploadname);
 
     if (sun_getgpsfromfile) {
@@ -2045,10 +2041,6 @@ int GetGPS() {
             fscanf(f, "%lf %lf\n", &gpslat, &gpslon);
             fclose(f);
         }
-    }
-    if (0 == timeWasSetBefore) {
-        system("hwclock -w");
-        syslog(LOG, "Doing hwclock -w");
     }
     return (1);
 }
@@ -2170,7 +2162,7 @@ int DeleteOldest() {
 
     int minr, minu, nr;
     char oldestname[20];
-    char cmd[25];
+    char cmd[28];
 
     msleep(128);
     syslog(LOG, "DeleteOldest");
@@ -2512,10 +2504,6 @@ void ReadTemperature() {
 int main(int argc, char *argv[]) {
 
     if (debugflag > 0) syslog(LOG, "Compiled " __DATE__  " " __TIME__ "\n");
-
-    // Load the kernel-modules required for the GPS
-    system("modprobe usbserial");
-    system("insmod ../pl2303.ko");
 
     gpsalt = gpslat = gpslon = 0;
     smem1 = (long *) 0;

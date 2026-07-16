@@ -1,4 +1,4 @@
-#include "as5216.h"
+#include "avaspec.h"
 
 namespace {
     long avantes_DeviceHandle;
