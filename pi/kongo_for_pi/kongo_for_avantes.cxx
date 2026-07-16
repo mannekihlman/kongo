@@ -143,9 +143,12 @@ namespace {
     //----------------------------------------------
     float AvantesGetTemperature() {
 
-	float t = 0.0;
-	AVS_GetAnalogIn(avantes_DeviceHandle, avantes_tempchannel, &t);
-        if (debugflag > 0) syslog(LOG, "Avantes temperature: %f\n", t);
+        float t = 0.0;
+        AVS_GetAnalogIn(avantes_DeviceHandle, avantes_tempchannel, &t);	
+        if (avantes_tempchannel == 0)
+    		t=118.69-70.361*t+21.02*t*t-3.6443*t*t*t+0.1993*t*t*t*t;
+
+        if (debugflag > 0) syslog(LOG, "Avantes temperature (%d): %f\n",avantes_tempchannel, t);
         return t;
     }
 
