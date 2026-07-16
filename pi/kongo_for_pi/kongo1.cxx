@@ -27,6 +27,7 @@ typedef unsigned char u8;
 long avantes_stest = 20;
 long avantes_ltest = 100;
 long avantes_maxcounts = 16384;
+long taskit_delay = 2;
 
 namespace {
     //----------------------------------------------
@@ -90,10 +91,6 @@ namespace {
     int gpsok = 0;
     u8 timeisset = 0;
 
-    u32 serverip = 0;
-    char username[16];
-    char password[16];
-    int ftpiterscans;
     char txt[1024];
 
     int uploadcnt;
@@ -678,8 +675,6 @@ void GetCPUTime() {
     yymmdd_date = yymmdd_date * 100 + tm->tm_mon + 1;
     yymmdd_date = yymmdd_date * 100 + tm->tm_mday;
 }
-
-#include "ftpclient.c"
 
 //----------------------------------------------
 void handleMayaPro(int bytes) {
@@ -1640,17 +1635,10 @@ int ReadSettingFile(char *filename) {
                 pt=strstr(txt,"=");
                 sscanf(&pt[1],"%d %d %d",&avantes_stest,&avantes_ltest,&avantes_maxcounts);
             }
-            if (pt = strstr(txt, "SERVER=")) {
-                struct sockaddr_in address;
-                struct hostent *hname;
-
-                pt = strstr(txt, "=");
-                sscanf(&pt[1], "%s %s %s %d",
-                       temp, username, password, &ftpiterscans);
-                hname = gethostbyname(temp);
-                memcpy(&address.sin_addr,
-                       hname->h_addr, hname->h_length);
-                serverip = address.sin_addr.s_addr;
+            if(pt=strstr(txt,"TASKIT_DELAY="))
+            {
+                pt=strstr(txt,"=");
+                sscanf(&pt[1],"%d",&taskit_delay);
             }
             if (pt = strstr(txt, "STEPSPERROUND=")) {
                 int j;
@@ -1697,10 +1685,6 @@ int ReadSettingFile(char *filename) {
             if (pt = strstr(txt, "REALTIME=")) {
                 pt = strstr(txt, "=");
                 sscanf(&pt[1], "%d", &realtime);
-            }
-            if (pt = strstr(txt, "FTPTIMEOUT=")) {
-                pt = strstr(txt, "=");
-                sscanf(&pt[1], "%d", &ftptimeout);
             }
             if (pt = strstr(txt, "MAXINTTIME=")) {
                 pt = strstr(txt, "=");
@@ -2452,25 +2436,6 @@ void ReadTemperature() {
     }
 
     //----------------------------------------------
-    int ftpiter;
-
-    void CheckFtpIteration() {
-        if (serverip) {
-            if (ftpiter <= 0) {
-                if (FileSize(uploadname) > 0) {
-                    if (ftpconnect() == 0) {
-                        if (debugflag > 0) syslog(LOG, "Could not send file");
-                    } else {
-                        remove(uploadname);
-                    }
-                }
-                ftpiter = ftpiterscans;
-            } else
-                ftpiter--;
-        }
-    }
-
-    //----------------------------------------------
     void CheckRenamePakFiles() {
         long siz_ul, siz_work;
 
@@ -2553,9 +2518,6 @@ int main(int argc, char *argv[]) {
     system("insmod ../pl2303.ko");
 
     gpsalt = gpslat = gpslon = 0;
-    ftpiterscans = 10;
-
-    ftpiter = 0;
     smem1 = (long *) 0;
     sbuf = (u16 *) 0;
     hostipaddr = 0;
@@ -2655,7 +2617,6 @@ int main(int argc, char *argv[]) {
                 CheckSunAngle();
                 HandleCfgOnce();
                 CheckRenamePakFiles();
-                CheckFtpIteration();
             }
             if (paused || (measurecnt == 0))
                 msleep(1000);

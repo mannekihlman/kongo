@@ -43,7 +43,7 @@ namespace {
             t += (tv2.tv_usec - tv1.tv_usec);
             syslog(LOG, "Time %d\n", t);
         }
-        while (CheckSerial(port_adc, 2) && (j < maxLength)) {
+        while (CheckSerial(port_adc, taskit_delay) && (j < maxLength)) {
             j += ReadSerial(port_adc, &txt[j], maxLength - j);
         }
         txt[j] = 0;

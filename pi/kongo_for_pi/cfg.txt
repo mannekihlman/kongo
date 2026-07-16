@@ -31,9 +31,6 @@ VERBOSEFILENAME=1
 PERCENT=0.7
 MAXINTTIME=5000
 
-% timeout in miliseconds for accessing the server
-% FTPTIMEOUT=20000
-% SERVER=129.16.35.206 novacUser iht-1inks.
 DEBUG=1
 BATTERYLIMIT=10
 COMPASS=270 0.0 0.0 0.0
