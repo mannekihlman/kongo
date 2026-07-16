@@ -27,7 +27,7 @@ typedef unsigned char u8;
 long avantes_stest = 20;
 long avantes_ltest = 100;
 long avantes_maxcounts = 16384;
-long avantes_tempchannel = 6;
+long avantes_tempchannel = 0;
 long taskit_delay = 2;
 
 namespace {
