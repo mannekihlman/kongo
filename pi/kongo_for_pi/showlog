@@ -1,0 +1,2 @@
+journalctl -f -o cat &
+

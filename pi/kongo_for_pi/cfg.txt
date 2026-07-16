@@ -10,7 +10,6 @@ It also defines the name for the file containing the IP number uploaded to the s
 % If RealTime=0 then the spectra will be added to work.pak one scan at a time
 # REALTIME=0
 
-DEBUG=2
 % StepsPerRound defines the number of steps the steppermotor divides one round into
 STEPSPERROUND=400
 MOTORSTEPSCOMP=0
@@ -19,7 +18,7 @@ PortNameGPS=/dev/ttyUSB0
 PortNameADC=/dev/ttyUSB1
 % PortNameSpec=/dev/ttymxc1
 SPECTROMETERTYPE=AVANTES
-AVANTES_EXPOSURE=20 100 16384
+AVANTES_EXPOSURE=25 150 16384
 
 % If Skipmotor=1 then the scanner will not be used. ONLY FOR TESTING PURPOSES
 SKIPMOTOR=0

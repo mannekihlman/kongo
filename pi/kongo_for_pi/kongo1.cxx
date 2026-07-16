@@ -27,6 +27,7 @@ typedef unsigned char u8;
 long avantes_stest = 20;
 long avantes_ltest = 100;
 long avantes_maxcounts = 16384;
+long avantes_tempchannel = 6;
 long taskit_delay = 2;
 
 namespace {
@@ -1634,6 +1635,11 @@ int ReadSettingFile(char *filename) {
                 pt=strstr(txt,"=");
                 sscanf(&pt[1],"%d %d %d",&avantes_stest,&avantes_ltest,&avantes_maxcounts);
             }
+            if(pt=strstr(txt,"AVANTES_TEMPCHANNEL="))
+            {
+                pt=strstr(txt,"=");
+                sscanf(&pt[1],"%d",&avantes_tempchannel);
+            }
             if(pt=strstr(txt,"TASKIT_DELAY="))
             {
                 pt=strstr(txt,"=");
@@ -2026,7 +2032,7 @@ int GetGPS() {
       stime(&tt);
 */
     sprintf(hhmmss_time, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
-    sprintf(txt, "date -s '%04d-%02d-%02d %02d:%02d:%02d'",
+    sprintf(txt, "sudo date -s '%04d-%02d-%02d %02d:%02d:%02d'",
             t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
             t.tm_hour, t.tm_min, t.tm_sec);
 
@@ -2446,7 +2452,7 @@ void ReadTemperature() {
                         // set date format from ddmmyy to yymmdd
                         // std::string str_date = std::to_string(yymmdd_date).substr(0, 6);
                         // std::string str_time = hhmmssSS_time;
-                        sprintf(txt, "%s_%s_%s.pak", instrumentname, yymmdd_date, hhmmss_time);
+                        sprintf(txt, "%s_%06d_%s.pak", instrumentname, yymmdd_date, hhmmss_time);
                         
                         SaveMemoryFile(txt);
                         uploadcnt++;

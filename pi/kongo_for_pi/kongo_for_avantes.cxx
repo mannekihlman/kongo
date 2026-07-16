@@ -142,9 +142,9 @@ namespace {
 
     //----------------------------------------------
     float AvantesGetTemperature() {
-        float u = 0.0;
-        AVS_GetAnalogIn(avantes_DeviceHandle, 0, &u);
-        float t = 118.69 - 70.361 * u + 21.02 * u * u - 3.6443 * u * u * u + 0.1993 * u * u * u * u;
+
+	float t = 0.0;
+	AVS_GetAnalogIn(avantes_DeviceHandle, avantes_tempchannel, &t);
         if (debugflag > 0) syslog(LOG, "Avantes temperature: %f\n", t);
         return t;
     }
@@ -199,7 +199,7 @@ namespace {
 
                     // If we didn't meet exposure limits we need to keep searching to find it
                     // We want exposure to land between 30 and 90 percent
-                    while (percFullExposure < .30 || percFullExposure > .90 || currentTest >= maxIntTime) {
+                    while ((percFullExposure < .30 || percFullExposure > .90) && currentTest >= maxIntTime) {
 
                         // create a new exposure time depending on if we need to go up in time or down
                         if (percFullExposure < .30) {
