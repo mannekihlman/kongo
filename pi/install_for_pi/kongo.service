@@ -5,8 +5,8 @@ After=multi-user.target
 [Service]
 Restart=always
 RestartSec=60
-User=pi
-ExecStart=/bin/bash  /home/pi/kongo.sh
+User=novac
+ExecStart=/bin/bash  /home/novac/kongo.sh
 
 [Install]
 WantedBy=multi-user.target

@@ -1,3 +1,0 @@
-#! /bin/sh
-killall tail
-tail -f /var/log/messages &
