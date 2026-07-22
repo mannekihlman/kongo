@@ -230,6 +230,7 @@ int ReadSerial(int port, void *pt, long len) {
 //----------------------------------------------
 void FlushSerial(int port, long t) {
     char txt;
+    if(!port) return;
     while (CheckSerial(port, t)) {
         ReadSerial(port, &txt, 1);
         if (debugflag > 2) syslog(LOG, "0x%0x\n", txt);
@@ -334,15 +335,6 @@ void setdirection(short node, short dir) {
 
     if (dir > 0) motorposition[node]++;
     else motorposition[node]--;
-}
-
-//----------------------------------------------
-void InitSerial() {
-    port_spec = OpenSerialPort(PortNameSpectrometer, BaudToBits(specbaud));
-    port_adc = OpenSerialPort(PortNameADC, B115200);
-    Taskit::InitADC();
-
-    if (debugflag > 0) StatusWriter(SERIALOPEN);
 }
 
 //----------------------------------------------
@@ -479,6 +471,18 @@ int isUSB2000PlusSpectrometer() {
     } else {
         return 0;
     }
+}
+
+
+//----------------------------------------------
+void InitSerial() {
+    if(!isAvantesSpectrometer())
+        port_spec = OpenSerialPort(PortNameSpectrometer, BaudToBits(specbaud));
+
+    port_adc = OpenSerialPort(PortNameADC, B115200);
+    Taskit::InitADC();
+
+    if (debugflag > 0) StatusWriter(SERIALOPEN);
 }
 
 //----------------------------------------------
