@@ -16,8 +16,8 @@ sudo echo "pi ALL=(root) NOPASSWD: /usr/bin/date" > /etc/sudoers.d/date
 sudo systemctl enable ssh
 
 sudo cp kongo.service /etc/systemd/system/kongo.service
-systemctl enable kongo
+sudo systemctl enable kongo
 
 # assure flash to storage
-sync
+sudo sync
 
