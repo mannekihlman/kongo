@@ -1,1 +1,1 @@
-pi ALL=(root) NOPASSWD: /usr/bin/date
+novac ALL=(root) NOPASSWD: /usr/bin/date
