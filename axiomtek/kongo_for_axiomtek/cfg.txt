@@ -18,6 +18,7 @@ MOTORSTEPSCOMP=0
 % PortNameADC=/dev/ttymxc2
 % PortNameSpec=/dev/ttymxc1
 SPECTROMETERTYPE=AVANTES
+AVANTES_EXPOSURE=25 150 16384
 
 % If Skipmotor=1 then the scanner will not be used. ONLY FOR TESTING PURPOSES
 SKIPMOTOR=1

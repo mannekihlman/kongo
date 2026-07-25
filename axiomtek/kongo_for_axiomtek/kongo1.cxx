@@ -2489,7 +2489,7 @@ void ReadTemperature() {
                         // set date format from ddmmyy to yymmdd
                         // std::string str_date = std::to_string(yymmdd_date).substr(0, 6);
                         // std::string str_time = hhmmssSS_time;
-                        sprintf(txt, "%s_%s_%s.pak", instrumentname, yymmdd_date, hhmmss_time);
+                        sprintf(txt, "%s_%06d_%s.pak", instrumentname, yymmdd_date, hhmmss_time);
                         
                         SaveMemoryFile(txt);
                         uploadcnt++;
