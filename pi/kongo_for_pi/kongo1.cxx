@@ -1887,7 +1887,7 @@ int GetGPSnew() {
     iter = 6;
     lat = lon = rmcok = ggaok = 0;
 
-    GetGPSString("$GPRMC,", 1500, gpstxt, 1024);
+    GetGPSString("RMC,", 1500, gpstxt, 1024);
 
     if (!gpstxt[0]) {
         return (0);
@@ -1898,11 +1898,11 @@ int GetGPSnew() {
         return (0);
     }
     dd = 0;
-    if (debugflag) syslog(LOG, "$GPRMC,%s\n", gpstxt);
+    if (debugflag) syslog(LOG, "RMC,%s\n", gpstxt);
     if (gpstxt[0] == ',') return (1);
     else {
         date = 0;
-        for (cnt = 0; cnt < 62 && gpstxt[cnt] && !date; cnt++) {
+        for (cnt = 0; cnt < 256 && gpstxt[cnt] && !date; cnt++) {
             if (gpstxt[cnt] == ',') dd++;
             if (dd == 8) {
                 sscanf(gpstxt + cnt + 1, "%ld", &date);
@@ -1934,14 +1934,14 @@ int GetGPSnew() {
             if (lat == 0 && lon == 0) return (2);
         } else return (1);
     }
-    GetGPSString("$GPGGA,", 1500, gpstxt, 1024);
+    GetGPSString("GGA,", 1500, gpstxt, 1024);
     if (!gpstxt[0]) return (0);
 
     if ((gpstxt[0] < '0' || '9' < gpstxt[0]) && gpstxt[0] != ',') {
         if (debugflag) syslog(LOG, "Corrupt GPS data\n");
         return (0);
     }
-    if (debugflag) syslog(LOG, "$GPGGA,%s\n", gpstxt);
+    if (debugflag) syslog(LOG, "GGA,%s\n", gpstxt);
 
     if (gpstxt[0] == ',') return (1);
     else {
