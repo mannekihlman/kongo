@@ -36,5 +36,5 @@ COMPASS=270 0.0 0.0 0.0
 
 % sum1 is inside the specrometer [1 to 15]
 %-----pos----time-sum1-sum2--chn--basename----- repetitions
-MEAS=   0 -1 2 1 256 sky      1  7
-MEAS= 100  0 2 1 256 dark      1  7
+MEAS=   0 -1 2 1 0 sky      1  7
+MEAS= 100  0 2 1 1 dark      1  7

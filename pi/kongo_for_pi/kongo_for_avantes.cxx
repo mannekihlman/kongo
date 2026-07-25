@@ -10,6 +10,8 @@ namespace {
     double avantes_inttime = 100.0;
     double avantes_numavg = 1.0;
 
+    AvsIdentityType l_Active[16];
+    int nrOfSpectrometers = 0;
     //----------------------------------------------
     void PrepareAvantesSpectrometer() {
         int l_Port = AVS_Init(0);
@@ -18,19 +20,21 @@ namespace {
             return;
         }
 
-        AvsIdentityType l_Active;
         unsigned int l_reqsize;
-        if (AVS_GetList(sizeof(AvsIdentityType), &l_reqsize, &l_Active) < 1) {
+        nrOfSpectrometers=AVS_GetList(sizeof(AvsIdentityType)*16, &l_reqsize, l_Active);
+        if (nrOfSpectrometers < 1) {
             syslog(LOG, "AVS_GetList failed");
             return;
         }
 
-        avantes_DeviceHandle = AVS_Activate(&l_Active);
-        syslog(LOG, "Successfully read spectrometer serial number '%s'\n", l_Active.SerialNumber);
+        avantes_DeviceHandle = AVS_Activate(&l_Active[0]);
+        for(int i=0;i<nrOfSpectrometers;i++)
+            syslog(LOG, "Spectrometer %d serial number '%s'\n",i ,l_Active[i].SerialNumber);
+
         if (instrumentname[0] != 0) {
-            syslog(LOG, "Will not chane name. Instrument name already set to '%s' in config file\n", instrumentname);
+            syslog(LOG, "Will not change name. Instrument name already set to '%s' in config file\n", instrumentname);
         } else {
-            strncpy(instrumentname, l_Active.SerialNumber, 15);
+            strncpy(instrumentname, l_Active[0].SerialNumber, 15);
         }
 
         if (ERR_SUCCESS != AVS_GetNumPixels(avantes_DeviceHandle, &avantes_NrPixels)) {
@@ -163,6 +167,12 @@ namespace {
 
         if (debugflag > 0)
             StatusWriter(INITSPEC);
+
+        int c = chn & 0xf;
+        if (c >= nrOfSpectrometers) c = nrOfSpectrometers - 1;
+
+        avantes_DeviceHandle = AVS_Activate(&l_Active[c]);
+        syslog(LOG, "Selecting Spec %d (%d %d) serial number '%s'\n",c,chn,avantes_DeviceHandle,l_Active[c].SerialNumber);
 
         long inttime = meas[measpt].inttime;
         meas[measpt].realexptime = inttime;

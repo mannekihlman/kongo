@@ -18,6 +18,10 @@ sudo systemctl enable ssh
 sudo cp kongo.service /etc/systemd/system/kongo.service
 sudo systemctl enable kongo
 
+# Enable max current to USB connectors. Needed for 2 spectrometers i,e wind measurements
+
+sudo echo "usb_max_current_enable=1" >>/boot/firmware/config.txt
+
 # assure flash to storage
 sudo sync
 
