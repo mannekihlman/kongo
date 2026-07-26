@@ -2545,10 +2545,8 @@ int main(int argc, char *argv[]) {
     SwitchRelay(0);
     sleep(1);
     KbdCheck();
-
     SwitchRelay(1);
     FlushSerial(port_spec, 128);
-    StatusWriter(WAIT4S);
 
     if (isAvantesSpectrometer()) {
         ResetSpectrometer();
@@ -2556,6 +2554,7 @@ int main(int argc, char *argv[]) {
         if (isHR2000Spectrometer() || isUSB2000PlusSpectrometer()) {
             ChangeBaudrate();
         } else {
+            StatusWriter(WAIT4S);
             CheckSerial(port_spec, 4000);
         }
         ResetSpectrometer();

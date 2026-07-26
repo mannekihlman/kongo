@@ -94,40 +94,60 @@ namespace {
 
     //----------------------------------------------
     int AvantesAddScan(short isum, short chn, long sleepsum) {
-        avantes_timeout = 1;
-        StartAvantesMeasurement();
-
-        // save last measurement while waiting so that we can measure faster
-        SaveScan();
-        if (isum == 0) {
-            GetCPUTime();
-            starttime = gpstime;
-            memset(smem1, 0, sizeof(long) * maxlen);
-        }
-
-        if (sleepsum < 0) sleepsum = -sleepsum;
-        msleep(sleepsum);
-
-        long timeout = 0;
-        while (avantes_timeout > 0) {
-            msleep(10);
-            timeout += 10;
-            if (timeout > sleepsum) {
-                return 1;      // 1 indicates error
-            }
-        }
-        speclen = 1 + avantes_PrepareMeasData.m_StopPixel - avantes_PrepareMeasData.m_StartPixel;
-
-        if (speclen > maxlen) speclen = maxlen;
         maxv = 0;
-        for (int j = 0; j < speclen; j++) {
-            double a = avantes_spectrum[j] * avantes_numavg;
-            smem1[j] += a;
-            if (maxv < a) {
-                maxv_idx = j;
-                maxv = a;
+        if (sleepsum < 0) sleepsum = -sleepsum;
+
+        int spectrometerNr = chn;
+        if (chn >= nrOfSpectrometers) spectrometerNr = 0;
+        do {
+            avantes_DeviceHandle = AVS_Activate(&l_Active[spectrometerNr]);
+            syslog(LOG, "Selecting spectrometer %d (%d %d) serial number '%s'\n"
+                ,spectrometerNr
+                ,chn
+                ,avantes_DeviceHandle
+                ,l_Active[spectrometerNr].SerialNumber);
+
+            avantes_timeout = 1;
+            StartAvantesMeasurement();
+
+            // save last measurement while waiting so that we can measure faster
+            SaveScan();
+            if (isum == 0) {
+                GetCPUTime();
+                starttime = gpstime;
+                memset(smem1, 0, sizeof(long) * maxlen);
             }
+            msleep(sleepsum);
+            long timeout = 0;
+            while (avantes_timeout > 0) {
+                msleep(10);
+                timeout += 10;
+                if (timeout > sleepsum) {
+                    return 1;      // 1 indicates error
+                }
+            }
+            speclen = 1 + avantes_PrepareMeasData.m_StopPixel - avantes_PrepareMeasData.m_StartPixel;
+            if (speclen > maxlen) speclen = maxlen;
+
+            int j = 0;
+            int step = 1;
+            if (chn >= nrOfSpectrometers) {
+                // interleave pixels for wind measurements
+                j = spectrometerNr;
+                step = nrOfSpectrometers;
+            }
+            for (; j < speclen; j+=step) {
+                double a = avantes_spectrum[j] * avantes_numavg;
+                smem1[j] += a;
+                if (maxv < a) {
+                    maxv_idx = j;
+                    maxv = a;
+                }
+            }
+            ++spectrometerNr;
         }
+        while ((chn >= nrOfSpectrometers) && spectrometerNr < nrOfSpectrometers);
+
         if (debugflag > 1) syslog(LOG, "AvantesAddScan successful");
         return 0;
     }
@@ -146,7 +166,6 @@ namespace {
 
     //----------------------------------------------
     float AvantesGetTemperature() {
-
         float t = 0.0;
         AVS_GetAnalogIn(avantes_DeviceHandle, avantes_tempchannel, &t);	
         if (avantes_tempchannel == 0)
@@ -156,7 +175,6 @@ namespace {
             else
     		    t=118.69-70.361*t+21.02*t*t-3.6443*t*t*t+0.1993*t*t*t*t;
         }
-
         if (debugflag > 0) syslog(LOG, "Avantes temperature (%d): %f\n",avantes_tempchannel, t);
         return t;
     }
@@ -165,14 +183,7 @@ namespace {
     int AvantesInitspectrometer(short chn, short sumcnt) {
         long m, digitalnoise;
 
-        if (debugflag > 0)
-            StatusWriter(INITSPEC);
-
-        int c = chn & 0xf;
-        if (c >= nrOfSpectrometers) c = nrOfSpectrometers - 1;
-
-        avantes_DeviceHandle = AVS_Activate(&l_Active[c]);
-        syslog(LOG, "Selecting Spec %d (%d %d) serial number '%s'\n",c,chn,avantes_DeviceHandle,l_Active[c].SerialNumber);
+        if (debugflag > 0) StatusWriter(INITSPEC);
 
         long inttime = meas[measpt].inttime;
         meas[measpt].realexptime = inttime;
@@ -184,7 +195,6 @@ namespace {
             if (debugflag) syslog(LOG, "Using zenith exposure time: %ld ms\n", inttime);
         } else if (inttime < 0) {
             SetSumCnt(1);
-
             SetExposureTime(avantes_ltest);
             if (AvantesAddScan(0, chn, avantes_ltest)) {
                 inttime = 20;
@@ -192,38 +202,26 @@ namespace {
                 if (pchannel != -1) {
                     maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                 }
-
                 m = maxv;
-
                 if (debugflag > 0) {
                     syslog(LOG,
                            "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n",
-                           m,
-                           maxv_idx,
-                           avantes_inttime);
+                           m, maxv_idx, avantes_inttime);
                 }
-
                 SetExposureTime(avantes_stest);
                 AvantesAddScan(0, chn, avantes_stest);
-
                 if (pchannel != -1) {
                     maxv = AvgChannels(smem1, pchannel, 10, maxlen);
                 }
-
                 digitalnoise = maxv;
-
                 if (debugflag > 0) {
                     syslog(LOG, "Maxvalue: %d (idx=%d) (inttime=%.0lf)\n", digitalnoise, maxv_idx, avantes_inttime);
                 }
 
                 if (m < 1 || digitalnoise == m) {
-
                     inttime = maxIntTime;
-
                     if (debugflag)
-                        syslog(LOG,
-                               "Calculated exposure time: %ld ms\n",
-                               inttime);
+                        syslog(LOG, "Calculated exposure time: %ld ms\n", inttime);
 
                 } else {
                     float a = avantes_maxcounts - digitalnoise;
@@ -237,18 +235,15 @@ namespace {
                         syslog(LOG, "Calculated exposure time: %ld ms", inttime);
 
                     if (inttime > maxIntTime) {
-
                         inttime = maxIntTime;
                         if (debugflag)
                             syslog(LOG, " but forced to %ld ms\n", inttime);
 
                     } else if (inttime < minIntTime) {
-
                         if (m < 200)
                             inttime = maxIntTime;
                         else
                             inttime = minIntTime;
-
                         if (debugflag)
                             syslog(LOG, " but forced to %ld ms\n", inttime);
                     }
@@ -261,6 +256,5 @@ namespace {
 
         if (debugflag > 1) StatusWriter(DONEINITSPEC);
         return 0;
-
     }
 } // namespace
