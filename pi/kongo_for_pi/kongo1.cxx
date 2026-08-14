@@ -670,6 +670,7 @@ void GetCPUTime() {
     gpstime = gpstime * 100 + tm->tm_min;
     gpstime = gpstime * 100 + tm->tm_sec;
     sprintf(hhmmss_time, "%06d", gpstime);
+    gpstime = gpstime * 100 + (tv.tv_usec / 10000);
 
     gpsdate = tm->tm_mday;
     gpsdate = gpsdate * 100 + tm->tm_mon + 1;
